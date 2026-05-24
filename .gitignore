@@ -54,6 +54,7 @@ include/
 site-packages/
 
 third_party/agentk/outputs/
-
+log/
+third_party/mle_star/machine_learning_engineering/tasks/
 logs
 job.slurm

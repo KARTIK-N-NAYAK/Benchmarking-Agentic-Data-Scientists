@@ -1,0 +1,88 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+
+# IDE/editor
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Build, dist, packaging
+build/
+dist/
+.eggs/
+*.egg
+*.whl
+
+# Test, run, and workspace outputs
+machine_learning_engineering/workspace/
+machine_learning_engineering/tests
+runs/
+openrouter_keys.txt
+**/final/
+**/*.log
+**/output/
+
+# Caches
+# Generic cache dirs
+.cache/
+**/.cache/
+cache/
+**/cache/
+
+# Python tooling caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+pip-wheel-metadata/
+pip-cache/
+
+# Coverage / test artifacts
+.coverage*
+coverage.xml
+htmlcov/
+
+# Model / ML related caches
+.huggingface/
+.transformers/
+
+# Node / package manager caches (in case of mixed env)
+.npm/
+.yarn/
+
+# Misc
+*.bak
+*.tmp
+*.swp
+*.swo
+*.orig
+
+mle-star-open/

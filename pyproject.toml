@@ -1,15 +1,35 @@
 [project]
-name = "automated-data-scientists-benchmark"
+name = "Benchmarking-Agentic-Data-Scientists"
+description = "A project to benchmark the performance of agentic data scientists in various tasks."
 version = "0.1.0"
-description = "A short description of the research project."
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
+
 dependencies = [
+    # Core
     "numpy",
     "pandas",
     "matplotlib",
     "scikit-learn",
     "jupyterlab",
     "kaggle>=1.8.2",
+
+    # Runtime / API
+    "openai",
+    "httpx",
+    "python-dotenv",
+    "pydantic",
+    "duckduckgo-search",
+
+    # ML
+    "torch",
+    "xgboost",
+    "lightgbm",
+    "catboost",
+    "seaborn",
+    "pytorch-tabnet",
+
+    # CLI utils
+    "absl-py",
 ]
 
 [project.optional-dependencies]
@@ -17,6 +37,8 @@ dev = [
     "pre-commit",
     "uv",
     "black",
+    "pytest",
+    "pytest-asyncio",
 ]
 
 # --- Tool Configurations ---
