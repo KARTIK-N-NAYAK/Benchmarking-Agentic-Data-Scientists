@@ -1,0 +1,47 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{{memory.retrieve({memory.mem_keys.OBSERVATION: 1.0})}}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- if code %}
+Given this python example of your last attempt:
+```python
+{{memory.retrieve({memory.mem_keys.CODE: 1.0})}}
+```
+This was the model performance:
+{%- if code_output|length > 600 %}
+{{ (code_output)[-600:] }}
+{% else %}
+{{memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})}}
+{% endif %}
+
+{%- if code_error == "" %}
+{% else %}
+### The error in your code was: {{code_error}}
+You should fix this error. For keras import errors, remember to use from keras.utils import to_categorical.
+{%- endif %}
+{%- endif %}
+Use your plans to help you code:
+{{memory.retrieve({memory.mem_keys.THOUGHT: 1.0})}}
+{% if memory.retrieve({memory.mem_keys.MODELLING_RAG: 1.0})=="" %}
+{% else %}
+You may take syntax help from below for coding syntax:
+```python
+{{memory.retrieve({memory.mem_keys.MODELLING_RAG: 1.0})}}
+```
+{% endif %}
+
+Modify this code:
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+```python
+{% include templates_relative_path + "/train_template.jinja" %}
+```
+You should focus on using better ML models from the above given plans and coding examples, and improve the overall performance.
+Do not try hyperparameter search to improve model performance, rather try different and more advanced models.
+Only provide the middle code required for building the model in the designated area, without re-writing other parts of the code.
+Only give code to fill, with no extra text. The final fitted model should be named 'model' in your code. NO evaluation of model. Only build the model. Code in the format:
+```python
+<code>
+```

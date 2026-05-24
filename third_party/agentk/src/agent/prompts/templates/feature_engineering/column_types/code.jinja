@@ -1,0 +1,76 @@
+[[ SYSTEM ]]
+You are a professional data scientist and a python expert. You are given with data frame. You have correctly identify the column types and generate a dictionary.
+
+
+[[ USER ]]
+{% if memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) %}
+## Table view
+This is a view of train data. Use this to get a better understanding of table to generate feature engineering code. Exact column and sample data can be find here.
+{{ memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) }}
+## Below are the columns available in the train data  :
+{{ memory.retrieve({memory.mem_keys.TAB_TRAIN_INFO: 1.0}) }}
+{%- else %}
+## There is no table view in memory
+{% endif -%}
+
+Your goal is to write the column_types function that reads your prepared dataset and writes down all column types as a json.
+
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% elif memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+You should fix this error next.
+{% endif -%}
+
+This is an example of how you can fill the code above:
+```python
+def column_types(input_df: pd.DataFrame) -> dict[str, Any]:
+    num_cols = input_df.select_dtypes(include=np.number).columns
+    bool_cols = input_df.select_dtypes(include='bool').columns
+    datetime_types = ["datetime", "datetime64", "datetime64[ns]", "datetimetz"]
+    datetime_cols = input_df.select_dtypes(include=datetime_types).columns
+    column_type_dict = defaultdict()
+    for col in input_df.columns:
+        if col in num_cols:
+            column_type_dict[col] = "num"
+        elif col in bool_cols:
+            column_type_dict[col] = "bool"
+        elif col in datetime_cols:
+            column_type_dict[col] = "date"
+        elif input_df[col].dtype == 'object':
+            if <condition1>:
+                column_type_dict[col] = "cat"
+            else:
+                column_type_dict[col] = "<other_type>"
+    return column_type_dict
+```
+While writing the function, remember to follow the rules:
+1. The code should account for all the data knowledge you know about categorical, boolean or numerical columns.
+2. There should be no errors.
+3. The output should be a dictionary containing all input columns and the type of data in each column.
+4. Special columns such as a DateTime column may have 'object' type, so you have to explicitly mention those columns to have 'DateTime' dtype.
+5. Note that we prefer the type "text" rather than "string"
+
+{% if memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) != None %}
+### Plan:
+{{ memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) }}
+{% endif -%}
+
+Your response should **only** be the code to complete the above template, in the format:
+```python
+code
+```
+No need to write any other part than the function.
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

@@ -1,0 +1,17 @@
+{% include "system_prompt.jinja" %}
+
+{# {% if memory.retrieve({memory.mem_keys.RAN_FE: 1.0}) == "True" %}
+[[ USER ]]
+{% include "DS-Task/DS-Feature Engineering/trajectory_fe.jinja" %}
+Here is a list of the available actions:
+FE : Further improve feature engineering code.
+Model : Improve the accuracy using better models than the basic model.
+
+Here is some further guidance on how to choose the command:
+1. If you think you have data ready for modelling, and the code does not have any error, then choose 'Action: Model'.
+3. You should choose Command: Terminate if good performance on all metrics is achieved already.
+4. You can improve your performance further by choosing 'Action: FE'.
+
+Choose an action that will help you complete the task. #}
+Please focus only on outputting a single thing.
+Please only output the following string: 'Action: FE'

@@ -1,0 +1,46 @@
+{
+    "title": "Kaggle failure",
+    "kaggle_name": "tabular-playground-series-aug-2022",
+    "raw_description": "",
+    "task_description": "",
+    "data_description": {
+        "target_cols": [
+            "failure"
+        ],
+        "positive_target_values" : {
+            "failure": "1"
+        },
+        "description": "",
+        "feature_types": {
+          "id": "num",
+          "product_code": "cat",
+          "loading": "num",
+          "attribute_0": "cat",
+          "attribute_1": "cat",
+          "attribute_2": "num",
+          "attribute_3": "num",
+          "measurement_0": "num",
+          "measurement_1": "num",
+          "measurement_2": "num",
+          "measurement_3": "num",
+          "measurement_4": "num",
+          "measurement_5": "num",
+          "measurement_6": "num",
+          "measurement_7": "num",
+          "measurement_8": "num",
+          "measurement_9": "num",
+          "measurement_10": "num",
+          "measurement_11": "num",
+          "measurement_12": "num",
+          "measurement_13": "num",
+          "measurement_14": "num",
+          "measurement_15": "num",
+          "measurement_16": "num",
+          "measurement_17": "num"
+        }
+    },
+    "score_name": "auc",
+    "metric_description": "",
+    "id_col": "id",
+    "prediction_type": "binary classification"
+}

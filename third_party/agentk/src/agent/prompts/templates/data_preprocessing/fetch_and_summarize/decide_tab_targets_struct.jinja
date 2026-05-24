@@ -1,0 +1,18 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+
+### Modalities Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TARGETS_MODALITY_MAPS: 1.0}) }}
+
+Given the above description, and the modalities description decide if you wish to create the train targets structure for the tabular modality.
+Note that if there are tabular targets required in this task in the above description, you should choose to create the target structure here.
+Otherwise, if this step is not needed in the task, you should decide to skip it.
+Output the string "create_tab_targets_struct" to create the train targets structure for the tabular modality.
+Output the string "tab_targets_struct_not_needed" to skip this step.
+
+Choose one of the two options in the following list, do not write anything else:
+- create_tab_targets_struct
+- tab_targets_struct_not_needed

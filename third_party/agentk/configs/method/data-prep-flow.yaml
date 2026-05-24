@@ -1,0 +1,386 @@
+# @package _global_
+commands_path: &commands_path "agent.commands"
+data_prep_commands_path: &data_prep_commands_path "agent.commands.data_prep_custom_commands"
+tools_path: &tools_path "agent.tools"
+
+agent:
+  on_episode_start_flow:
+    _target_: ${commands_path}.SequentialFlow
+    name: data_preprocessing_task
+    description: Entire pipeline
+    sequence:
+      # ==================================================
+      # Fetch data and Summarize scrapped descriptions
+      # ==================================================
+      - _target_: ${data_prep_commands_path}.FetchAndSummarizeData
+        fetch_tool_prompt_template: 'fetch_and_summarize/fetch.jinja'
+        detect_sample_submission_prompt_template: 'fetch_and_summarize/detect_sample_submission.jinja'
+        summarize_required_prompt_templates:
+          task_template: "fetch_and_summarize/summarize_task.jinja"
+          data_template: "fetch_and_summarize/summarize_data.jinja"
+          input_modality_maps_template: "fetch_and_summarize/summarize_input_modality_maps.jinja"
+          target_modality_maps_template: "fetch_and_summarize/summarize_target_modality_maps.jinja"
+          modality_transforms_template: "fetch_and_summarize/summarize_modality_transforms.jinja"
+          metric_template: "fetch_and_summarize/summarize_metric.jinja"
+          submission_template: "fetch_and_summarize/summarize_submission_format.jinja"
+          sample_submission_file: ${task.sample_submission_file}
+        workspace_path: ${task.workspace_path}
+        raw_data_dir_name: ${task.raw_data_dir_name}
+        task_url: ${task.task_url}
+        is_local_task: ${task.is_local_task}
+        path_to_saved_responses: ${task.path_to_saved_responses}
+
+      - _target_: ds_agent.rag.commands.StartRAGDB
+        db_path: ${task.db_faiss_path}
+        db_embedded_field: ${task.db_embedding_field}
+        db_embedding_model_name: ${task.embedding_model_name}
+        disabled: true
+
+      - _target_: ${data_prep_commands_path}.CreateDataPrepPlan
+        human_takeover: true
+        required_prompt_templates:
+          input_stages: "plan/input_stages.jinja"
+          target_stages: "plan/target_stages.jinja"
+          transform_stages: "plan/transform_stages.jinja"
+        db_faiss_k: ${task.db_faiss_k}
+        path_to_saved_responses: ${task.path_to_saved_responses}
+        stage_max_retries: ${task.stage_max_retries}
+
+      - _target_: ${data_prep_commands_path}.GetTaskCategory
+        workspace_path: ${task.workspace_path}
+        max_retries: 10
+        required_prompt_templates:
+          task_category_template: "fetch_and_summarize/get_task_category.jinja"
+        human_takeover: true
+
+  pre_action_flow:
+    # ==================================================
+    # Create Training Data Maps and Transforms
+    # Outer LoopFlow with general unit test at the end
+    # ==================================================
+    _target_: ${commands_path}.DecisionFlow
+    name: "stage_decision"
+    description: "Decide what stage to do next"
+    prompt_template: "stage_decision.jinja"
+    max_retries: 10
+    parse_func_id: extract_action_as_json
+    memory_choice_tag_val: _available_actions
+    choices:
+      # ------------------------------
+      # Think and Code - Train Tabular Input Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/tab_input_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/tab_input_train.jinja"
+        code_prompt_template: "data_map/code/map/tab_input_train.jinja"
+        summarize_prompt_template: "data_map/summarize/map/tab_input_train.jinja"
+        modality: "tab"
+        input_or_target: "input"
+        split: "train"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Column Types (if Tabular-Only Task)
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeColumnTypes
+        loop_flow_prompt_template: "column_types/loop_flow.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "column_types/think.jinja"
+        code_prompt_template: "column_types/code.jinja"
+        comment_prompt_template: "column_types/comment.jinja"
+        summarize_prompt_template: "column_types/summarize.jinja"
+        use_error_instructions: ${task.use_error_instructions}
+        human_takeover_step: ${task.human_takeover_step}
+        fill_template: true
+      # ------------------------------
+      # Think and Code - Train Image Input Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/img_input_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/img_input_train.jinja"
+        code_prompt_template: "data_map/code/map/img_input_train.jinja"
+        summarize_prompt_template: "data_map/summarize/map/img_input_train.jinja"
+        modality: "img"
+        input_or_target: "input"
+        split: "train"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Train Text Input Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/txt_input_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/txt_input_train.jinja"
+        code_prompt_template: "data_map/code/map/txt_input_train.jinja"
+        summarize_prompt_template: "data_map/summarize/map/txt_input_train.jinja"
+        modality: "txt"
+        input_or_target: "input"
+        split: "train"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Train Tabular Target Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/tab_target_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/tab_target_train.jinja"
+        code_prompt_template: "data_map/code/map/tab_target_train.jinja"
+        summarize_prompt_template: "data_map/summarize/map/tab_target_train.jinja"
+        modality: "tab"
+        input_or_target: "target"
+        split: "train"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Train Image Target Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/img_target_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/img_target_train.jinja"
+        code_prompt_template: "data_map/code/map/img_target_train.jinja"
+        summarize_prompt_template: "data_map/summarize/map/img_target_train.jinja"
+        modality: "img"
+        input_or_target: "target"
+        split: "train"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Train Text Target Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/txt_target_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/txt_target_train.jinja"
+        code_prompt_template: "data_map/code/map/txt_target_train.jinja"
+        summarize_prompt_template: "data_map/summarize/map/txt_target_train.jinja"
+        modality: "txt"
+        input_or_target: "target"
+        split: "train"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Train Tabular Input-Target Unit Test
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.StageGroupUnitTestActionFlow
+        split: "train"
+        modality: "tab"
+        map: true
+      # ------------------------------
+      # Train Image Input-Target Unit Test
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.StageGroupUnitTestActionFlow
+        split: "train"
+        modality: "img"
+        map: true
+      # ------------------------------
+      # Train Text Input-Target Unit Test
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.StageGroupUnitTestActionFlow
+        split: "train"
+        modality: "txt"
+        map: true
+      # ------------------------------
+      # Train All Input-Target Unit Test
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.StageGroupUnitTestActionFlow
+        split: "train"
+        modality: "all"
+        map: true
+      # ------------------------------
+      # Think and Code - Train Tabular Target Transform
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataTransform
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/transform/tab_target_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/transform/tab_target_train.jinja"
+        code_prompt_template: "data_map/code/transform/tab_target_train.jinja"
+        summarize_prompt_template: "data_map/summarize/transform/tab_target_train.jinja"
+        target_columns_transform_prompt_template: "fetch_and_summarize/get_column_target_transform.jinja"
+        modality: "tab"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Train Image Target Transform
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataTransform
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/transform/img_target_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/transform/img_target_train.jinja"
+        code_prompt_template: "data_map/code/transform/img_target_train.jinja"
+        summarize_prompt_template: "data_map/summarize/transform/img_target_train.jinja"
+        modality: "img"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Train Text Target Transform
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataTransform
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/transform/txt_target_train.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/transform/txt_target_train.jinja"
+        code_prompt_template: "data_map/code/transform/txt_target_train.jinja"
+        summarize_prompt_template: "data_map/summarize/transform/txt_target_train.jinja"
+        modality: "txt"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Train DataLoader Unit Test
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.StageGroupUnitTestActionFlow
+        split: "train"
+        dataloader: true
+      # ------------------------------
+      # Get Positive Class(es) if Task is a (Multiple) Binary Classification
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.CreatePositiveClass
+        positive_class_prompt_template: "fetch_and_summarize/get_positive_class.jinja"
+        human_takeover_step: ${task.human_takeover_step}
+      # ==================================================
+      # Create Test Data Maps
+      # Outer LoopFlow with general unit test at the end
+      # ==================================================
+      # ------------------------------
+      # Think and Code - Test Tabular Input Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/tab_input_test.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/tab_input_test.jinja"
+        code_prompt_template: "data_map/code/map/tab_input_test.jinja"
+        summarize_prompt_template: "data_map/summarize/map/tab_input_test.jinja"
+        modality: "tab"
+        input_or_target: "input"
+        split: "test"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Test Image Input Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/img_input_test.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/img_input_test.jinja"
+        code_prompt_template: "data_map/code/map/img_input_test.jinja"
+        summarize_prompt_template: "data_map/summarize/map/img_input_test.jinja"
+        modality: "img"
+        input_or_target: "input"
+        split: "test"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Think and Code - Test Text Input Map
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeDataMap
+        loop_flow_prompt_template: "data_map/loop_flow/loop_flow.jinja"
+        table_view_prompt_template: "table_view/map/txt_input_test.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "data_map/think/map/txt_input_test.jinja"
+        code_prompt_template: "data_map/code/map/txt_input_test.jinja"
+        summarize_prompt_template: "data_map/summarize/map/txt_input_test.jinja"
+        modality: "txt"
+        input_or_target: "input"
+        split: "test"
+        human_takeover_step: ${task.human_takeover_step}
+        specialized_llm_name: code
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+      # ------------------------------
+      # Test DataLoader Unit Test
+      # ------------------------------
+      - _target_: ${data_prep_commands_path}.StageGroupUnitTestActionFlow
+        split: "test"
+        dataloader: true
+
+      # ==================================================
+      # Create Submission format Function
+      # ==================================================
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeSubmissionFormat
+        loop_flow_prompt_template: "submission_format/loop_flow.jinja"
+        table_view_prompt_template: "table_view/submission.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "submission_format/think.jinja"
+        code_prompt_template: "submission_format/code.jinja"
+        summarize_prompt_template: "submission_format/summarize.jinja"
+        human_takeover_step: ${task.human_takeover_step}
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+        code_filename_specification: "submission_format"
+
+      # ==================================================
+      # Create Submission format Alternative Function
+      # ==================================================
+      - _target_: ${data_prep_commands_path}.ThinkAndCodeSubmissionFormat
+        loop_flow_prompt_template: "submission_format/loop_flow.jinja"
+        table_view_prompt_template: "table_view/submission.jinja"
+        error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+        think_prompt_template: "submission_format/think_alt.jinja"
+        code_prompt_template: "submission_format/code_alt.jinja"
+        summarize_prompt_template: "submission_format/summarize.jinja"
+        human_takeover_step: ${task.human_takeover_step}
+        use_table_view: ${task.use_table_view}
+        use_error_instructions: ${task.use_error_instructions}
+        code_filename_specification: "submission_format_alt"
+        flow_name: "create_submission_format_alt"
+
+      # ==================================================
+      # Create Metric Function
+      # ==================================================
+      - _target_: ${data_prep_commands_path}.SelectMetric
+        workspace_path: ${task.workspace_path}
+        max_retries: ${task.human_takeover_step}
+        prompt_template: "metric/select_metric.jinja"
+        metric_coding_flow:
+          _target_: ${data_prep_commands_path}.ThinkAndCodeMetric
+          loop_flow_prompt_template: "metric/loop_flow.jinja"
+          table_view_prompt_template: "table_view/metric.jinja"
+          error_instruct_prompt_template: "error_instruction/error_instruction.jinja"
+          think_prompt_template: "metric/think.jinja"
+          code_prompt_template: "metric/code.jinja"
+          summarize_prompt_template: "metric/summarize.jinja"
+          human_takeover_step: ${task.human_takeover_step}
+          specialized_llm_name: code
+          use_table_view: ${task.use_table_view}
+          use_error_instructions: ${task.use_error_instructions}
+
+  prompt_builder:
+    template_paths: [ "data_preprocessing/" ]
+    default_kwargs:
+      cot_type: zero_shot

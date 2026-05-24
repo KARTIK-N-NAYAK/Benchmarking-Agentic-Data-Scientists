@@ -1,0 +1,69 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set regression_target_view = memory.retrieve({memory.mem_keys.REGRESSION_TARGET_VIEW: 1.0}) %}
+{%- set regression_target_stats = memory.retrieve({memory.mem_keys.REGRESSION_TARGET_STATS: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+EDA: {{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+At this stage you should implement a class doing rescaling of the regression targets in order to obtain the best performance.
+This implementation should take into account the distribution and scale of the targets, on the metric that is considered in this competition, and on the fact that a deep learning model will be used to make the predictions.
+
+To rescale the targets, you have to create a class called TabRegressionTargetScaler and implement 4 methods:
+    - __init__: can contain auxiliary attributes used in `fit`
+    - fit: will be called on the training regression targets DataFrame
+    - transform: to transform the regression targets after the fit.
+    - inverse_transform: to map the test predictions back to the original scales.
+
+This class can even simply be a wrapper of sklearn's transforms classes, or it can implement a trivial transformation that do not modify the data if no rescaling is deemed necessary.
+
+### Regression data view
+This is what the regression targets look like (few random raws):
+{{ regression_target_view }}
+
+And this is the distribution of the regression targets in `train_tab_target_map.csv`:
+{{ regression_target_stats }}
+{% include "./ds_main_pipeline/code_error_report_for_code.jinja" %}
+
+### Final Guidance
+Use your plans to help you implement the transforms:
+{{ plan }}
+
+Note that:
+- the `inverse_transform` method will be used to project predicted values back to the original domain
+- you can apply different scalings on different columns based on relevant criteria and on the above statistics.
+
+
+Your need to fill the blank and implement the TabRegressionTargetScaler in this code:
+```python
+{% include templates_relative_path + "/tab_regression_target_scaler_code_template.jinja" %}
+```
+
+Only output the code made of the necessary imports and the TabRegressionTargetScaler implementation with no extra text.
+Your response should be in the format:
+```python
+<code>
+```

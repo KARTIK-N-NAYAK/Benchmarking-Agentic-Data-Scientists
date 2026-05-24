@@ -1,0 +1,28 @@
+[project]
+name = "automated-data-scientists-benchmark"
+version = "0.1.0"
+description = "A short description of the research project."
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "scikit-learn",
+    "jupyterlab",
+    "kaggle>=1.8.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "uv",
+    "black",
+]
+
+# --- Tool Configurations ---
+[tool.black]
+line-length = 100
+
+[tool.isort]
+line_length = 100
+profile = "black"

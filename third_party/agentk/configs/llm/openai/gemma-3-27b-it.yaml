@@ -1,0 +1,13 @@
+defaults:
+  - openai
+
+# Local OpenAI-compatible server (Gemma)
+model_id: gemma-3-27b-it
+
+# Adjust if your server supports different context lengths
+context_length: 16384
+
+temperature: 0.2
+max_tokens: 512
+
+tokenizer_kwargs: {}

@@ -1,0 +1,36 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Metric Description
+{{memory.retrieve({memory.mem_keys.SUMMARIZED_METRIC_DESCRIPTION: 1.0})}}
+
+From the above information, your goal is to select the metric type from the list. 
+Your response should not be an action or a thought, but an available metric type from the list. 
+If the list does not contain the correct metric type, your response MUST be "none". Do not select the wrong metric type.
+
+Here is a list of the available metric types:
+{% for metric in metrics %}
+{{loop.index}}. "{{metric}}"
+{% endfor %}
+
+
+You should only output one of the available metrics (do not reformulate the choices) and format your answer as a json:
+```json
+    {
+        "metric": "<metric_choice>"
+    }
+```
+
+Here is an example of the response you should give when the metric is RMSE:
+```json
+    {
+        "metric": "rmse"
+    }
+```
+
+Here is an example of the response you should given when the correct metric type is not in the list:
+```json
+    {
+        "metric": "none"
+    }
+```

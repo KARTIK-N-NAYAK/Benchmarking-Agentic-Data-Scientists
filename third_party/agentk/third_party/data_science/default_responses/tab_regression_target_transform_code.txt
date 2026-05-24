@@ -1,0 +1,38 @@
+<ANS>
+```python
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+
+
+class TabRegressionTargetScaler:
+    def __init__(self):
+        self.scalers = {}
+        self.nan_values = {}
+
+    def fit(self, df):
+        for col in df.columns:
+            # Handle NaN values
+            self.nan_values[col] = df[col].isna()
+            df[col] = df[col].fillna(df[col].median())
+
+            # Fit StandardScaler
+            self.scalers[col] = StandardScaler()
+            self.scalers[col].fit(df[[col]])
+
+    def transform(self, df):
+        for col in df.columns:
+            df[col] = self.scalers[col].transform(df[[col]])
+        return df
+
+    def inverse_transform(self, df):
+        for col in df.columns:
+            # Inverse Standard scaling
+            df[col] = self.scalers[col].inverse_transform(df[[col]])
+
+            # Re-introduce NaN values
+            if len(df[col]) == len(self.nan_values[col]):
+                df[col] = df[col].where(~self.nan_values[col], np.nan)
+        return df
+```
+</ANS>

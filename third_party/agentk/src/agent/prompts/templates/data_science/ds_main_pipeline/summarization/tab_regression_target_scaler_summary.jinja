@@ -1,0 +1,52 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## Your code for regression targets rescaling
+You designed the following plan to create transform and inverse transform of the regression targets:
+{{ plan }}
+
+This is the code you've generated and that we will use to transform the targets for the current solution:
+```python
+{{ code }}
+```
+
+### Regression data view
+This is what the regression targets look like (few random raws):
+{{ regression_target_view }}
+
+And this is the distribution of the regression targets in `train_tab_target_map.csv`:
+{{ regression_target_stats }}
+{% include "./ds_main_pipeline/_code_report.jinja" %}
+
+## TODO
+You now need to give a short description of the transforms and inverse transforms code to give insights on what is done at this stage of the solution.
+Provide a one-line summary of your plan and code. If plan and code are not aligned, ignore the plan and only provide a concise description of what the code is doing. Output the summary in json format:
+```json
+    {
+        "summary": "<plan_and_code_summary>"
+    }
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

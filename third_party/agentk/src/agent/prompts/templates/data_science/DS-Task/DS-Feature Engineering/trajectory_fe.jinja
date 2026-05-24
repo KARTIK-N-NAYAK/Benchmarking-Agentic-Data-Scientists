@@ -1,0 +1,31 @@
+{{memory.retrieve({memory.mem_keys.OBSERVATION: 1.0})}}
+
+{%- set thought = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) -%}
+{%- if thought %}
+Your plan: {{thought}}
+{%- endif %}
+
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) -%}
+{%- if code  %}
+Previously generated code:
+```python
+{{memory.retrieve({memory.mem_keys.CODE: 1.0})}}
+```
+{%- endif %}
+
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- if code_error|length == 0 %}
+{%- if code_output|length == 0 %}
+{%- else %}
+You can try some log-transformations to see if you get better results. Else, This score is for a basic linear regression model. You can further improve this by Move_to_modelling:
+{%- if code_output|length > 600 %}
+{{ (code_output)[-600:] }}
+{% else %}
+{{code_output}}
+{% endif %}
+{% endif %}
+{%- else %}
+The above code was run and this was the error:
+{{code_error}}
+{%- endif %}

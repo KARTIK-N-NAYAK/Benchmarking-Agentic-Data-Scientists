@@ -1,0 +1,35 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set model_perf = memory.retrieve({memory.mem_keys.MODEL_PERF: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Model performance
+{{ model_perf }}
+
+## Your code for model training
+This is the code you've actually generated and that will be used to prepare best feature engineered dataset.
+```python
+{{ code }}
+```
+You now need to give a short description of the training code to give insights on what is done.
+
+## TODO
+Provide a one-line summary of your plan and code. If plan and code are not aligned, ignore the plan and only provide a concise description of what the code is doing. Output the summary in json format:
+```json
+    {
+        "summary": "<plan_and_code_summary>"
+    }
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

@@ -1,0 +1,50 @@
+{% set task_description = memory.retrieve({memory.mem_keys.SUMMARIZED_TASK_DESCRIPTION: 1.0}) %}
+{% set data_description = memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) %}
+{% set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{% set plan = memory.retrieve({memory.mem_keys.DATA_PREP_PLAN: 1.0}) %}
+{% set code_err = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{% set test_err = memory.retrieve({memory.mem_keys.UNIT_TEST_ERROR: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+### Task description
+{{ task_description }}
+
+### Data description
+{{ data_description }}
+
+{% if plan %}
+### Plan Status
+{{ plan.to_str() }}
+{% endif -%}
+
+{% if code_err %}
+You had this error in the code:
+```
+{{ code_err }}
+```
+{% endif -%}
+{% if test_err %}
+You had this error in the unit test:
+```
+{{ test_err }}
+```
+{% endif -%}
+
+### What to do next
+Explain in one sentence what you want to do next and why.
+Then select one (and only one) of the following available actions.
+Make sure the action chosen is taken strictly from the list below:
+
+{% for action in available_actions %}
+* {{ action }}
+{% endfor %}
+
+Please output one (and only one) of the available actions (do not reformulate the choices) as a JSON objet in a JSON code block such as:
+```json
+{
+    "action": "<action_choice>"
+}
+```

@@ -1,0 +1,11 @@
+<ANS>
+```python
+import pandas as pd
+
+def calculate_class_weights(target_df:pd.DataFrame, target_columns: list) -> np.ndarray:
+    # Generate a weight vector of ones (same length as the number of samples)
+    weight_vector = np.ones(len(target_df))
+
+    return weight_vector
+```
+</ANS>

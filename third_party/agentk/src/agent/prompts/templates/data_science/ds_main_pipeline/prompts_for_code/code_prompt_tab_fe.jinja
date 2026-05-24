@@ -1,0 +1,92 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+EDA: {{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+
+{% include "./ds_main_pipeline/code_error_report_for_code.jinja" %}
+
+Use your plans to help you engineer the features:
+{{ plan }}
+
+## What to Do Next
+Your task is to implement a class DataPreprocessor with a method `preprocess` based on the provided plan. This method should transform the data in `train_tab_input_map.csv` and `test_tab_input_map.csv` in such a way that:
+- All features are numerical
+- There are no missing values
+
+
+### Key Guidelines:
+1. Dynamic Column Handling:
+   - Column names may not follow any specific pattern. If the plan mentions features like A1 to A4, they may not be sequential (e.g., A3 might be missing).
+   - Ensure you iterate over the column names dynamically to avoid `KeyError`.
+   - Do not create new DataFrame without keeping the original column names.
+
+2. Focus on Feature Engineering:
+   - Do **not** plan or write any code related to model training, as this stage is exclusively for data transformation.
+   - When applying processing (e.g. sklearn transformer or scaler), only fit on the training data and not on the test data.
+   - Be aware of the number of columns being created at each stage
+   - avoid nested loops that would take too long to run (i.e. `for _ in ...: for _ in ...`).
+   - Avoid OneHotEncoder for high-cardinality features to prevent creating an excessive number of features.
+   - Note: if you use OneHotEncoder, `sparse` parameter is deprecated so use `sparse_output` instead.
+   - Consolidate equivalent missing categories into one placeholder (e.g., 'missing') before encoding.
+   - train and test dataset does not contain target columns, target dataset is provided separately.
+   - The preprocess function should focus on the train and test datasets. The target is available only for the training data and should be used if necessary to process the train and test sets. The final target dataset will not be considered.
+   - Ensure the 'id' index remains unchanged in both train and test datasets, including the index name. Avoid creating duplicate 'id' columns or modifying the index.
+   - Use below python code to find variable ```target_column``` and use it to fetch target columns from target dataframe.
+    ```python
+        task_type = ... # fill this value example classification, regression
+        target_column = ... # fill this value
+        target_column = f"{target_column}_{task_type}"
+    ```
+    - To identify date time columns and convert to datetime format , strictly follow below python logic
+    ```python
+    categorical_cols = df.select_dtypes(include=['object']).columns
+    numerical_cols = df.select_dtypes(include=['int64', 'float64']).columns
+    date_cols = []
+    for col in df.columns:
+        if col not in numerical_cols:
+            try:
+                temp_col = pd.to_datetime(df[col], errors='coerce', utc=True)
+                if temp_col.notna().any():
+                    df[col] = temp_col
+                    date_cols.append(col)
+                    if col in categorical_cols:
+                        categorical_cols = categorical_cols.drop([col], errors='ignore')
+            except:
+                pass
+    ```
+
+Your task is to fill the blank and implement the feature engineering in this code:
+```python
+{% include templates_relative_path + "/tab_fe_code_template.jinja" %}
+```
+
+Only output the code that should be filled in the blank with no extra text. Don't forget to import any additional packages that you will use in the code.
+Your response should be in the format:
+```python
+<code>
+```

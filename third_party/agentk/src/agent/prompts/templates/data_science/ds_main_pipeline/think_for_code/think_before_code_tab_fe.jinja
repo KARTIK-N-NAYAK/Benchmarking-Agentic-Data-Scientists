@@ -1,0 +1,95 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{% set summarize_cot = memory.retrieve({memory.mem_keys.SUMMARIZE_COT: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Table Overview
+This is a snapshot of the train dataset for your reference. It will help in crafting the feature engineering code.
+Exact column names and sample data can be found here:
+{{ memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) }}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+You want to generate code for the feature engineering of the tabular data.
+After executing your feature engineering code, the tabular data should all be numerical with no outliers and should not contain any missing value.
+
+1. Environment Setup:
+Ensure all necessary packages are imported (pandas, numpy, scikit-learn, etc.). Use the latest versions to avoid deprecated functions.
+
+2. Feature engineering considerations:
+- Feature engineering should not be limited to basic/generic feature engineering. Rather exploit the provided data to generate a tailored plan.
+- At the end, the total number of features should be reasonable (e.g. not exceed 1000) plan feature selection if needs be.
+- If you use Encoders, Transforms, scaling  and other feature engineering operations, that should be suitable to the data.
+
+3. Transformation Requirements:
+- The final output should only contain numerical features, with no missing values.
+- if you use encoders like OneHotEncoding, ensure consistent encoding across train and test data, prevent any mismatch in generated features.
+
+4. Key Considerations:
+- **Dynamic Column Handling**: Iterate over the columns in the dataset, as column names may not follow a specific pattern (e.g., A1, A2, A4). Prevent potential `KeyError` by dynamically selecting columns.
+- Do **not** plan or write any code related to model training.
+- Ensure there is no NaN values before any division operation.
+- Consolidate all equivalent missing feature values ("", "?", "unknown","NaN", etc.) into a single placeholder category  value, like 'unknown' for categorical values or find median like method for numerical features, so-and-so, before encoding the data. Missing date or time values can be filled with the earliest date or time found in the dataset.
+- train and test dataset does not contain target columns, target dataset is provided separately for train dataset.
+- 'id' is the index in train, test and target dataframes.
+- Ensure the 'id' index remains unchanged in both train and test datasets, including the index name. Avoid creating duplicate 'id' columns or modifying the index.
+- Do not save pre-processed dataset.
+- Do not drop rows from train or test dataset.
+- Avoid OneHotEncoder for high-cardinality features to prevent creating an excessive number of features.And briefly explain the logic, how you decide which encoding should be used.
+- Do not create weird feature names and there should not be any data leakage.
+- When converting data types use "errors='coerce'" to handle errors.
+- Ensure all date columns are converted to datetime format before extracting features and specify format when converting to dates, like '%Y-%m-%d' eg: ```pd.to_datetime(..., errors='coerce', format='%Y-%m-%d')```.
+- To identify date time columns and convert to datetime format , strictly follow below python logic or use the columns specified in the data description.
+```python
+categorical_cols = df.select_dtypes(include=['object']).columns
+numerical_cols = df.select_dtypes(include=['int64', 'float64']).columns
+date_cols = []
+for col in df.columns:
+    if col not in numerical_cols:
+        try:
+            temp_col = pd.to_datetime(df[col], errors='coerce', utc=True)
+            if temp_col.notna().any():
+                df[col] = temp_col
+                date_cols.append(col)
+                if col in categorical_cols:
+                    categorical_cols = categorical_cols.drop([col], errors='ignore')
+        except:
+            pass
+```
+- The preprocess function should focus on the train and test datasets. The target is available only for the training data and should be used if necessary to process the train and test sets. The final target dataset will not be considered.
+- While performing transformations based on the train data fit, note that the target column is not available in the test dataset.
+- Transform complex features to atomic numeric features.
+- Do not add any assert statements in the preprocess function of DataPreprocessor class
+- Use below python code to find variable ```target_column``` and use it to fetch target columns from target dataframe.
+```python
+    task_type = ... # fill this value , It should be either 'classification' or 'regression'
+    target_column = ... # actual target column name , fill this value
+    target_column = f"{target_column}_{task_type}"
+```
+
+{% include "./ds_main_pipeline/code_error_report_think.jinja" %}
+
+
+Now write only a very short  Feature Engineering  plan that should not contain alternatives ("can do this... OR that ...") as it should be operational. BUT DO NOT WRITE CODE YET.
+The plan should be tailored to the current task as it will be used to guide the implementation of the feature engineering.
+{% include "./ds_main_pipeline/plan_cot.jinja" %}

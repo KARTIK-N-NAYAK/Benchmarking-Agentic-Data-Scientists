@@ -1,0 +1,22 @@
+{%- set submission_list = memory.retrieve({memory.mem_keys.SUBMISSION_LIST: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+This is the list of the solutions that have already been generated:
+{% for submission in submission_list %}
+* {{ submission.name }}: {{ submission.submission_state.summary }}
+{% endfor %}
+
+You will now blend the above submissions to create a final submission with improved predictive capabilities.
+Please select the submissions from above that you wish to blend to obtain the final result.
+Please return only the submission ids separated by commas in the following JSON format
+```json
+{
+    "submission": "<submission_choice_1>, <submission_choice_2>, ..."
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

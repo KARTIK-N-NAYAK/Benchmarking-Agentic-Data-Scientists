@@ -1,0 +1,18 @@
+{%- set code_passed = memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{%- set unit_test_passed = memory.retrieve({memory.mem_keys.UNIT_TEST_PASSED: 1.0}) %}
+{%- set group_unit_test_ran = memory.retrieve({memory.mem_keys.GROUP_UNIT_TEST_RAN: 1.0}) %}
+{%- set group_unit_test_passed = memory.retrieve({memory.mem_keys.GROUP_UNIT_TEST_PASSED: 1.0}) %}
+
+{% if group_unit_test_ran and (code_passed==None or (code_passed!=None and code_passed)) and (unit_test_passed==None or (unit_test_passed!=None and unit_test_passed)) %}
+{% if not group_unit_test_passed %}
+You have written code for multiple steps in a pipeline, each one of these steps passed with its own unit test succeeding.
+However, there is a unit test at the end of a group of stages that is run to check that the combination of all precedent stages is creating correct combined code.
+This final group unit test failed, and you are now attempting again the related stages.
+
+### The error in the group unit test was:
+```
+{{ memory.retrieve({memory.mem_keys.GROUP_UNIT_TEST_ERROR: 1.0}) }}
+```
+{%- block group_unit_test_error_instruction %}{% endblock -%}
+{% endif -%}
+{% endif -%}

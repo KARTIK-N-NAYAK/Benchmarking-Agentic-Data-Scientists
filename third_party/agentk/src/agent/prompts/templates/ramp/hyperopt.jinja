@@ -1,0 +1,23 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+For setting up the tabular submission, you must choose appropriate values for the following hyperparameters:
+* submission_type: <str|List[str]> You can select one value or a list of values from ['xgboost', 'lgbm', 'catboost']. This defines which model(s) you wish to optimize the hyperparams for.
+* n_folds: <int> Number of folds to train the hyperparam optimizer on
+* n_trials: <int> Number of trials
+* workflow_element_names: <str> 'regressor' or 'classifier' depending on the task type (regression or classification)
+
+Please select the best parameters for getting best prediction results.
+Please return only the parameters name in the following JSON format, filling the appropriate values from above.
+```json
+{
+    "submission_type": ["<choice_of_submission_type_1>", "<choice_of_submission_type_2>"],
+    "n_folds": <number_of_folds>,
+    "n_trials": <number_of_trials>,
+    "workflow_element_names": "<regressor_or_classifier>"
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

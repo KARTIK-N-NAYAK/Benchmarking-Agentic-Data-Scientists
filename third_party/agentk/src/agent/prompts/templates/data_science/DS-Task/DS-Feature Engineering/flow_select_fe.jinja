@@ -1,0 +1,25 @@
+{% include "system_prompt.jinja" %}
+
+{% if memory.retrieve({memory.mem_keys.RAN_FE: 1.0}) == "True" %}
+Your response should not be an action or a thought, but an available command from the list, using the following format:
+Command: <command>
+[[ USER ]]
+{% include "DS-Task/DS-Feature Engineering/trajectory_fe.jinja" %}
+
+Here is a list of the available commands:
+think_and_validate_fe_code : Do feature engineering
+Move_to_modelling : Improve the accuracy using better models than the basic model.
+
+
+Here is some further guidance on how to choose the command:
+1. If you have not done any feature engineering then DO NOT choose to go to modelling.
+2. If you think you have data ready for modelling, and the code does not have any error, then choose the command <Move_to_modelling>.
+3. If the code has any import errors or indexing issues, fix them first using <think_and_validate_fe_code>.
+4. You should choose Move_to_modelling if there is no errors as <Move_to_modelling> can help improve accuracy further.
+6. You can improve your performance further through <Move_to_modelling>.
+
+Choose a command that will help you complete the task.
+{% else %}
+Please focus only on outputting a command here.
+Please only output the following string: 'Command: think_and_validate_fe_code'
+{% endif %}

@@ -1,0 +1,48 @@
+[[ SYSTEM ]]
+You are a professional data scientist and a python expert. You are given with data frame. You have correctly identify the column types and generate a dictionary.
+
+[[ USER ]]
+### Task Description
+{{memory.retrieve({memory.mem_keys.SUMMARIZED_TASK_DESCRIPTION: 1.0})}}
+
+### Data Description
+{{memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0})}}
+{{memory.retrieve({memory.mem_keys.TAB_TRAIN_COLUMNS: 1.0})}}
+{{memory.retrieve({memory.mem_keys.TAB_TRAIN_INFO: 1.0})}}
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+{% endif -%}
+{% endif -%}
+
+{# {% include "snippets/unit_test.jinja" -%} #}
+
+{% if memory.retrieve({memory.mem_keys.COMMENT_COLUMN_TYPES: 1.0}) != None %}
+### This is the comment you wrote about the previous column types you generated
+{{ memory.retrieve({memory.mem_keys.COMMENT_COLUMN_TYPES: 1.0}) }}
+
+Take it into account in the plan.
+{% endif %}
+
+Your plan should include:
+1. Any specific information about the column format you have.
+2. How to deal with that information and capture all column types in a dictionary.
+3. Avoid any errors in coding the dictionary.
+
+Your goal is to write the column_types function that reads your prepared dataset and writes down all column types as a json.
+Now, write a **short** (no more than 3 steps) plan of how you would do that.
+If there is an error in a previous attempt, explain in **one** sentence why this error happened and how to fix it.
+Do not write code yet, simply the plan.

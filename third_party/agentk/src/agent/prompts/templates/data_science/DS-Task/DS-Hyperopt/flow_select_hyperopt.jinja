@@ -1,0 +1,16 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+Your response should not be an action or a thought, but an available command from the list, using the following format:
+Command: ...
+Here is a list of the available commands:
+
+{% if memory.retrieve({memory.mem_keys.RAN_HYPEROPT: 1.0}) == "True" %}
+optimize: Optimize the hyperparameters on your final best model
+submit: Submit your optimized model
+
+Choose a command that will help you complete the task.
+{% else %}
+Please focus only on outputting a command here.
+Please only output the following string: 'Command: optimize'
+{% endif %}

@@ -1,0 +1,38 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set submission_list = memory.retrieve({memory.mem_keys.SUBMISSION_LIST: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Current solution progress
+You have started creating a new solution.
+
+You need to decide what the next step should be to complete this new solution, given the input data and the target data.
+
+## What to do next
+Explain what you want to do next and then select one (and only one) of the following available actions:
+
+{%- for action in available_actions %}
+* {{ action }}
+{%- endfor %}
+
+You should only output one of the available actions (do not reformulate the choices) and format your answer as a json:
+```json
+    {
+        "action": "<action_choice>"
+    }
+```
+
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

@@ -1,0 +1,41 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+# Task Description
+The task is a {{ metadata["prediction_type"] }} task and here is the description:
+{{ metadata["task_description"] }}
+
+# Score type
+The score for the model evaluation is: {{ metadata["score_name"} }}
+
+# Feature types
+This is the list of the features and their type:
+{% for feature in metadata["data_description"]["feature_types"] -%}
+{{ feature }}: {{ metadata["data_description"]["feature_types"][feature] }}
+{% endfor %}
+
+
+Your objective is to identify one feature among the ones in the dataset to be removed from the dataset based on your analysis of the metadata.
+The idea of removing the feature is to help the model that will be trained on this dataset achieve better performance.
+
+You should only output the name of the feature to drop (do not list the features) and format your answer as a json:
+```json
+    {
+        "feature": "<feature_to_drop>"
+    }
+```
+
+Here is an example of the response you should give when the feature to drop is called 'hours worked':
+```json
+    {
+        "feature": "hours worked"
+    }
+```
+
+Here is an example of the response you should give when the feature to drop is called 'km_walked':
+```json
+    {
+        "feature": "km_walked"
+    }
+```
+

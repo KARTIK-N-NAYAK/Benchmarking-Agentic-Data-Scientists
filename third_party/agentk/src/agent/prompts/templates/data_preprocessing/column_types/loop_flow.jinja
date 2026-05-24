@@ -1,0 +1,48 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Task Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TASK_DESCRIPTION: 1.0}) }}
+
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test.jinja" -%}
+
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+### These are the column types you have created
+{{ memory.retrieve({memory.mem_keys.VALID_COLUMN_TYPES: 1.0}) }}
+
+### This is the comment you made earlier about these column types that you created:
+{{ memory.retrieve({memory.mem_keys.COMMENT_COLUMN_TYPES: 1.0}) }}
+Remember, datetime column types should have 'Datetime' dtypes, and so on.
+
+Only if some column type(s) is/are wrong, you may select 'Continue' to improve the column types.
+However, if all column types look appropriate for the dataset, you can 'Terminate'.
+
+Here is a list of the available commands:
+Command: Terminate
+Command: Continue
+{% else -%}
+Here is a list of the available commands:
+Command: Continue
+{% endif -%}
+Now, choose a command now and please do not write anything else.

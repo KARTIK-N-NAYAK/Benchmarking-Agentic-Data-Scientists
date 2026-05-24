@@ -1,0 +1,15 @@
+build
+dist
+*.pyc
+.DS_Store
+rampwf.egg-info
+.coverage
+coverage.xml
+ramp_workflow.egg-info
+.cache
+
+# included test starting kits
+training_output/
+*starting_kit.html
+doc/_build/
+/.idea

@@ -1,0 +1,110 @@
+{% set create_transform_tab_target_train = stages_code_dict.get("create_transform_tab_target_train", dict()) %}
+{% set create_map_tab_target_train = stages_code_dict.get("create_map_tab_target_train", dict()) %}
+{% set create_map_img_target_train = stages_code_dict.get("create_map_img_target_train", dict()) %}
+{% set create_map_txt_target_train = stages_code_dict.get("create_map_txt_target_train", dict()) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Submission Format Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_SUBMISSION_FORMAT: 1.0}) }}
+
+### Modalities Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TARGETS_MODALITY_TRANSFORMS: 1.0}) }}
+
+{% if memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) %}
+### These are some of the tables you have asked information about:
+{{ memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) %}
+### These are some tips to avoid common mistakes in the code:
+{{ memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) }}
+{% endif -%}
+
+Your goal is to create an inverse transform function for the training tabular targets.
+If the train tabular targets do not require being transformed, the functions should simply be the identity, i.e. return the targets unchanged.
+Note that for classification targets, a predictive model will output the probits (probability to belong to each class), while for regression targets it will output raw predictions.
+The inverse transform function will take as input the predicted values, and shall return the data in the format that is expected for the submission.
+
+Example1: the task is a binary classification and the targets in the submission format are "TRUE" and "FALSE".
+- The transform function will one-hot encode the binary target.
+- The inverse function would take a DataFrame of probits as input and convert the row-wise argmax into the corresponding class "TRUE" or "FALSE".
+
+Example2: the task is a multiclass classification and the submission format is the probability of each class.
+- The transform function will perform one-hot encoding of the classification target column.
+- The inverse transform just returns the table of predicted probits as is, since it already corresponds to the submission format.
+
+Example3: the task is a multiclass classification and the submission format is the class label.
+- The transform function will do the 1-hot encoding of the target class,
+- The inverse transform should apply the argmax operation on the probits and map it to the class label.
+
+Example4: the task is a regression
+- The transform will not change the target values,
+- The inverse transform should return the predicted elements unchanged.
+
+{% if create_map_tab_target_train and create_map_tab_target_train.get("code", None) %}
+### This is the code you helped write earlier to create the train tabular targets:
+{{ create_map_tab_target_train.get("code") }}
+{{ create_map_tab_target_train.get("code_summary") }}
+{% endif -%}
+{% if create_map_img_target_train and create_map_img_target_train.get("code", None) %}
+### This is the code you helped write earlier to create the train image targets:
+{{ create_map_img_target_train.get("code") }}
+{{ create_map_img_target_train.get("code_summary") }}
+{% endif -%}
+{% if create_map_txt_target_train and create_map_txt_target_train.get("code", None) %}
+### This is the code you helped write earlier to create the train text targets:
+{{ create_map_txt_target_train.get("code") }}
+{{ create_map_txt_target_train.get("code_summary") }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+You should fix this error next.
+{% endif -%}
+{% else -%}
+{% if create_transform_tab_target_train and create_transform_tab_target_train.get("code", None) %}
+### This was the resulting code after your last attempt:
+{{ stages_code_dict['create_transform_tab_target_train']['code'] }}
+{% if stages_code_dict['create_transform_tab_target_train']['code_output']|length > 0 %}
+### This was the output:
+```
+{{ stages_code_dict['create_transform_tab_target_train']['code_output'] }}
+```
+{% endif -%}
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test_fix_error.jinja" -%}
+
+{% set code_template = memory.retrieve({memory.mem_keys.CODE_TEMPLATES: 1.0})["transform_tab_target_train"] %}
+Your task is to complete the following code in order to create these transforms:
+```python
+{% include code_template %}
+```
+
+{% if memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) != None %}
+## Plan:
+{{ memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) }}
+{% endif -%}
+Your response should be the above template completed, in the format:
+```python
+code
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

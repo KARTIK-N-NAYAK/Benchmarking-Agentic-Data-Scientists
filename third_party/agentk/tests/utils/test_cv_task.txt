@@ -1,0 +1,559 @@
+<ANS>
+- **Main Goal**: Classify images into two categories: `red_circle` and `blue_square`.
+- **Task Type**: Binary classification.
+</ANS>
+
+<ANS>
+### File Organization:
+
+The data is organized as follows:
+
+```
++-custom_task_test/
+  |
+  +-test/
+  | |
+  | +-blue_square/
+  | | +-blue_square_0.png
+  | | +-blue_square_1.png
+  | | ...
+  | | +-blue_square_49.png
+  | |
+  | +-red_circle/
+  |   +-red_circle_0.png
+  |   +-red_circle_1.png
+  |   ...
+  |   +-red_circle_49.png
+  |
+  +-train/
+  | |
+  | +-blue_square/
+  | | +-blue_square_0.png
+  | | +-blue_square_1.png
+  | | ...
+  | | +-blue_square_49.png
+  | |
+  | +-red_circle/
+  |   +-red_circle_0.png
+  |   +-red_circle_1.png
+  |   ...
+  |   +-red_circle_49.png
+  |
+  +-test.csv
+  +-train.csv
+  +-sample_submission.csv
+```
+
+### Key Features and Targets:
+
+- **Features**:
+  - `image_path`: Path to the image file.
+
+- **Target**:
+  - `label`: Binary classification target indicating whether the image is a 'red_circle' or 'blue_square'.
+
+### Data Overview:
+
+- **train.csv**: 100 entries with training data.
+- **test.csv**: 100 entries with test data.
+- **sample_submission.csv**: 100 entries with empty predictions to be filled.
+
+The task is to build a model that can predict the `label` (either 'red_circle' or 'blue_square') based on the image data.
+</ANS>
+
+
+<ANS>
+To compute the accuracy metric for this classification task:
+
+1. **Compare Predictions to Truth**: For each image, check if the predicted label matches the true label.
+2. **Count Correct Predictions**: Sum all instances where the predicted label equals the true label.
+3. **Calculate Accuracy**: Divide the total correct predictions by the total number of images to get the accuracy score, which ranges from 0 to 1.
+
+This metric evaluates how often the model correctly classifies the image
+</ANS>
+
+<ANS>
+The submission format for the Kaggle competition is as follows:
+
+1. **File Format**: The submission must be a CSV file.
+2. **Columns**:
+   - **image_id**: This column contains the filenames of the test images (e.g., `red_circle_0.png`).
+   - **label**: This column contains the predicted class for each image.
+
+3. **Target Values**:
+   - The allowed values for the `label` column are:
+     - `'red_circle'`
+     - `'blue_square'`
+
+### Example of the required format:
+```
+image_id,label
+red_circle_0.png,red_circle
+red_circle_1.png,blue_square
+...
+```
+
+### Notes:
+- The `label` column must contain one of the two specified class values.
+- Ensure that the file has no additional headers beyond the column names.
+- The file should be saved without any extra spaces or characters in the CSV format.
+</ANS>
+
+<ANS>
+**Input Modalities Needed for the Task:**
+
+- **Tabular Input Map:** NO. There is no tabular data beyond the necessary metadata (image paths and labels) which are not used for training or prediction.
+
+- **Image Input Map:** YES. The task involves classifying images into two categories, so the image data is essential.
+
+- **Text Input Map:** NO. There is no text data involved in this task.
+
+**Input Modalities List:**
+
+- **Image Input Map:** YES
+  - **Related files:** All image files located in the `train` and `test` directories under `blue_square` and `red_circle` subdirectories.
+</ANS>
+
+<ANS>
+For the current task, we need to determine the target modality required to solve the classification problem.
+
+### Key Analysis:
+1. **Task Nature**: The task is a binary classification problem where we need to predict whether an image is a 'red_circle' or 'blue_square'.
+
+2. **Target Modality**:
+   - The target is a class label ('red_circle' or 'blue_square'), which is a **tabular** target.
+   - We are not generating or predicting any images or text; thus, image and text target maps are not required.
+
+3. **Files Related to Target**:
+   - The target information is present in `train.csv` and `test.csv` under the `label` column.
+   - The `sample_submission.csv` indicates the format for the prediction output, which is a tabular format with the predicted class labels.
+
+### Conclusion:
+- **Tabular Target Map**: YES (We need to predict class labels, which are tabular data.)
+- **Image Target Map**: NO (We are not predicting any image data.)
+- **Text Target Map**: NO (There is no text target in this task.)
+
+### Final Answer:
+```
+- tabular target map: YES (related files: train.csv, test.csv)
+- image target map: NO
+- text target map: NO
+```
+</ANS>
+
+<ANS>
+For this binary classification task, the target transform involves converting the string labels into numerical form for model training and back to strings for submission.
+
+### Target Transforms Needed:
+
+1. **Tabular Target Transform: YES**
+   - **Transform Function**: Converts 'red_circle' and 'blue_square' labels into numerical labels (e.g., 0 and 1).
+   - **Inverse Transform Function**: Converts numerical predictions back to the original string labels for submission.
+
+### Description:
+- The `transform` function maps 'red_circle' to 0 and 'blue_square' to 1, enabling the model to process the data.
+- The `inverse_transform` function converts the numerical predictions (0 or 1) back to 'red_circle' and 'blue_square', respectively, ensuring the submission format is correct.
+
+### Final Answer:
+```
+- tabular target transform: YES (converts labels to numerical form and back)
+- image target transform: NO
+- text target transform: NO
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "tabular_inputs_needed": False,
+    "image_inputs_needed": True,
+    "text_inputs_needed": False
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "tabular_targets_needed": True,
+    "image_targets_needed": False,
+    "text_targets_needed": False
+}
+```
+</ANS>
+
+<ANS>
+The task is a binary classification problem because there are exactly two distinct classes to predict: 'red_circle' and 'blue_square'. Each image must be classified into one of these two categories.
+
+```json
+{
+    "task_type": "binary classification"
+}
+```
+</ANS>
+
+<ANS>
+To create `train_img_input_map.csv`, I need to extract image paths and their corresponding filenames from `train.csv`. Thus, I should examine `train.csv`.
+
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+1. Load the training data from `train.csv` to access image paths.
+2. Extract the `image_id` as the unique identifier for each data point.
+3. Create a new CSV file (`train_img_input_map.csv`) with two columns: `id` (using `image_id`) and `image_path` (using the full image path from `train.csv`).
+</ANS>
+
+<ANS>
+```python
+import os
+import pandas as pd
+
+# Load the training data from train.csv
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+train_df = pd.read_csv(os.path.join(raw_root,'custom_task_test/train.csv'))
+
+# Rename the image_id column to 'id'
+train_df = train_df.rename(columns={'image_id': 'id'})
+
+# Create the train_img_input_map DataFrame with required columns
+train_img_input_map = train_df[['id', 'image_path']]
+
+# Save the DataFrame to CSV
+train_img_input_map.to_csv("./train_img_input_map.csv", index=False)
+print("`train_img_input_map.csv` created and saved.")
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The code loads the training data from `train.csv`, renames the `image_id` column to `id`, creates a DataFrame with `id` and `image_path`, and saves it to `train_img_input_map.csv`."
+}
+```
+</ANS>
+
+<ANS>
+To create the `train_tab_target_map.csv`, we need to look at the `train.csv` file to extract the target information.
+
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+1. Extract the `image_id` and `label` columns from `train.csv`.
+2. Rename the `label` column to `label_classification` to reflect the classification task.
+3. Create a new CSV file `train_tab_target_map.csv` containing the `image_id` and `label_classification` columns without any transformations.
+
+This approach ensures that the target is properly mapped and named according to the classification task, aligning with the problem requirements.
+</ANS>
+
+<ANS>
+```python
+import os
+import pandas as pd
+
+# Load the training data from train.csv
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+train_df = pd.read_csv(os.path.join(raw_root,'custom_task_test/train.csv'))
+
+# Rename the image_id column to 'id'
+train_df = train_df.rename(columns={'image_id': 'id'})
+
+# Rename the label column to indicate it's a classification target
+train_df = train_df.rename(columns={'label': 'label_classification'})
+
+# Create the train_tab_target_map DataFrame with required columns
+train_tab_target_map = train_df[['id', 'label_classification']]
+
+# Save the DataFrame to CSV
+train_tab_target_map.to_csv("./train_tab_target_map.csv", index=False)
+print("`train_tab_target_map.csv` created and saved.")
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script processes the training data by renaming the 'image_id' and 'label' columns to 'id' and 'label_classification', respectively, and saves a new CSV file containing these columns for the classification task."
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "label_classification": "top_k(1, None)"
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+To create the `test_img_input_map.csv`, follow these steps:
+
+1. **List All Test Images**: Traverse the `test` directory and collect all image file paths from both `blue_square` and `red_circle` subdirectories.
+
+2. **Extract IDs and Paths**: For each image, extract the filename as the "id" and the full path as "image_path".
+
+3. **Generate CSV**: Compile these into a CSV file with columns "id" and "image_path", ensuring all test images are included without duplication.
+</ANS>
+
+<ANS>
+```python
+import os
+import pandas as pd
+
+# Load the test data from test.csv
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+test_df = pd.read_csv(os.path.join(raw_root,'custom_task_test/test.csv'))
+
+# Rename the image_id column to 'id'
+test_df = test_df.rename(columns={'image_id': 'id'})
+
+# Create the test_img_input_map DataFrame with required columns
+test_img_input_map = test_df[['id', 'image_path']]
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script reads test data from test.csv, renames the 'image_id' column to 'id', selects 'id' and 'image_path' columns, and saves the result as test_img_input_map.csv."
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+### Plan:
+1. **Rename Columns**: Ensure the DataFrame has the correct column names (`image_id` and `label`) as per the submission format.
+2. **Validate Labels**: Ensure the `label` column contains only the allowed values (`'red_circle'` or `'blue_square'`).
+3. **Export to CSV**: Save the formatted DataFrame to a CSV file with no additional headers or spaces.
+
+### Explanation of Potential Error:
+If the DataFrame column names do not match the required format, renaming them is essential to ensure compatibility with the submission requirements.
+</ANS>
+
+<ANS>
+To solve this problem, we need to format a given DataFrame containing predictions into a specific submission format required for a Kaggle competition. The submission must be a CSV file with specific column names and valid class labels.
+
+### Approach
+1. **Rename Columns**: The input DataFrame may have columns named 'id' and 'label'. We need to rename 'id' to 'image_id' to match the submission format.
+2. **Select Required Columns**: Ensure that only the necessary columns 'image_id' and 'label' are present in the output DataFrame.
+3. **Validate Labels**: The 'label' column must contain only the allowed values, which are 'red_circle' or 'blue_square'. If any invalid values are found, an error is raised.
+
+### Solution Code
+```python
+"""
+This script creates a function that takes an input Dataframe and formats it to follow the submission file format.
+"""
+import pandas as pd
+
+def df_to_submission_format(
+    input_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Formats the input DataFrame to the submission format.
+
+    Args:
+        input_df: DataFrame to be formatted, containing 'id' and 'label' columns.
+
+    Returns:
+        A DataFrame with columns 'image_id' and 'label' in the correct format.
+    """
+    # Rename 'id' to 'image_id' if 'id' exists in the columns
+    if 'id' in input_df.columns:
+        input_df = input_df.rename(columns={'id': 'image_id'})
+
+    # Select only the required columns
+    input_df = input_df[['image_id', 'label']]
+
+    # Validate the labels
+    allowed_labels = ['red_circle', 'blue_square']
+    if not input_df['label'].isin(allowed_labels).all():
+        raise ValueError("Labels must be either 'red_circle' or 'blue_square'.")
+
+    return input_df
+```
+
+### Explanation
+1. **Rename Columns**: The function checks if the column 'id' exists. If it does, it renames it to 'image_id'.
+2. **Select Columns**: The function ensures that only the 'image_id' and 'label' columns are included in the output DataFrame.
+3. **Validate Labels**: The function checks that all values in the 'label' column are either 'red_circle' or 'blue_square'. If any invalid values are found, an error is raised.
+
+This approach ensures that the input DataFrame is correctly formatted according to the submission requirements, making it ready for export as a CSV file.
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The function formats a DataFrame by renaming columns to 'image_id' and 'label', validates the labels to be either 'red_circle' or 'blue_square', and returns the properly structured DataFrame."
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+### Plan:
+1. **Rename Columns**: Rename the `id` column to `image_id` to match the required submission format, while keeping the `label` column as is.
+2. **Validate Labels**: Ensure that the `label` column contains only the allowed values (`'red_circle'` or `'blue_square'`).
+3. **Save as CSV**: Export the DataFrame to a CSV file without additional headers or index, ensuring the correct format.
+
+### Potential Error Fix:
+If the DataFrame contains incorrect label values, ensure they are mapped to the allowed class values before saving the submission.
+</ANS>
+
+<ANS>
+To solve this problem, we need to format a given DataFrame containing predictions into a specific submission format for a Kaggle competition. The submission must be a CSV file with two columns: `image_id` and `label`, where the `label` must be either `'red_circle'` or `'blue_square'`.
+
+### Approach
+1. **Rename Columns**: The input DataFrame has an `id` column, which needs to be renamed to `image_id` to match the required submission format.
+2. **Validate Labels**: Ensure that the `label` column contains only the allowed values (`'red_circle'` or `'blue_square'`). If any invalid values are found, an error is raised.
+3. **Return Formatted DataFrame**: The function returns the DataFrame with the correctly renamed columns and validated labels.
+
+### Solution Code
+```python
+"""
+This script creates a function that takes an input Dataframe and formats it to follow the submission file format
+"""
+import pandas as pd
+
+def df_to_submission_format(input_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Format the input_df to the submission format DataFrame
+    Args:
+        input_df: DataFrame to be formatted
+    Returns:
+        format_submission_df: DataFrame formatted
+    """
+    # Rename 'id' column to 'image_id'
+    submission_df = input_df.rename(columns={'id': 'image_id'})
+
+    # Validate that all labels are either 'red_circle' or 'blue_square'
+    allowed_labels = {'red_circle', 'blue_square'}
+    if not submission_df['label'].isin(allowed_labels).all():
+        raise ValueError("All labels must be either 'red_circle' or 'blue_square'.")
+
+    # Ensure the DataFrame has the correct column order
+    return submission_df[['image_id', 'label']]
+```
+
+### Explanation
+1. **Rename Columns**: The function uses `rename` to change the column name from `id` to `image_id`.
+2. **Validate Labels**: The function checks if all values in the `label` column are either `'red_circle'` or `'blue_square'`. If any invalid values are found, a `ValueError` is raised.
+3. **Return Formatted DataFrame**: The function returns the DataFrame with the columns `image_id` and `label` in the correct order, ensuring it is ready for submission as a CSV file.
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The function renames the 'id' column to 'image_id', validates that all labels are either 'red_circle' or 'blue_square', and returns the DataFrame in the required submission format with columns 'image_id' and 'label'."
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "paths": [],
+}
+```
+</ANS>
+
+<ANS>
+**Plan to Fix Potential Issues:**
+
+1. **Check Input Dimensions**: Ensure that `y_true` and `y_pred` have the same length. If not, raise an error or return 0 to handle mismatched data.
+
+2. **Compare Labels**: For each pair of true and predicted labels, check if they match.
+
+3. **Calculate Accuracy**: Compute the ratio of correct predictions to the total number of images.
+
+**Explanation of Potential Error:**
+
+If `y_true` and `y_pred` have different lengths, comparing them element-wise would result in an error. Adding a check at the beginning of the function to verify their lengths prevents this issue and ensures accurate computation.
+</ANS>
+
+<ANS>
+```python
+import os
+import numpy as np
+import pandas as pd
+from torch import Tensor
+
+# metric definition
+def metric_function(
+        y_pred: pd.DataFrame | Tensor,
+        y_true: pd.DataFrame | Tensor,
+) -> float:
+    """
+    Computes the accuracy metric on (a batch of) inputs and returns the result.
+
+    Args:
+        y_pred: The predicted target (DataFrame or Tensor).
+        y_true: The true target (DataFrame or Tensor).
+
+    Returns:
+        float: The accuracy score.
+    """
+    # Check if the lengths of y_true and y_pred are the same
+    if len(y_true) != len(y_pred):
+        return 0.0
+
+    # Convert to NumPy arrays for consistent handling
+    if isinstance(y_true, pd.DataFrame):
+        y_true_np = y_true.values
+    else:
+        y_true_np = y_true.detach().numpy()
+
+    if isinstance(y_pred, pd.DataFrame):
+        y_pred_np = y_pred.values
+    else:
+        y_pred_np = y_pred.detach().numpy()
+
+    # Compare element-wise to get a boolean array
+    correct = np.equal(y_true_np, y_pred_np)
+
+    # Calculate the accuracy as the mean of correct predictions
+    score = np.mean(correct)
+
+    return float(score)
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "A function to compute accuracy by comparing true and predicted labels, handling both DataFrames and Tensors, ensuring equal lengths, and returning the mean of correct predictions."
+}
+```
+</ANS>

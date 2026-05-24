@@ -1,0 +1,46 @@
+{% set summarize_cot = memory.retrieve({memory.mem_keys.SUMMARIZE_COT: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{% if fetched_raw_data %}
+This is the summarized data description for the task:
+
+{{ summarized_data_description }}
+
+Here is some information about the tables in the raw data directory
+```
+{{ raw_table_info }}
+```
+
+There are three main modalities in general: tabular, image and text.
+Your task is to determine what modality is needed for the current task, and in particular what target modalities are needed.
+Pay attention to the sample_submission.csv to decide the target modality as it contains the format for the target task.
+
+{% if has_sample_submission %}
+### View of the sample submission:
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+Important: you can not use the sample submission file to create the target map
+
+{% endif -%}
+
+
+For example, in an image multiclass classification task where there are also tabular metadata, there are going to be:
+tabular targets for the classification labels.
+This is because there are image inputs but the targets are classes, i.e. tabular targets and not image targets as we are not predicting images.
+
+Another example is if the task is text classification, for instance classifying some reviews of movies.
+In this task the input is textual but the target is again tabular as we are predicting classes and not generating text.
+
+The full list is then:
+    - tabular target map: YES for the classification labels -> related files: [list of related files]
+    - image target map:   NO as we are not predicting images in this task, we are predicting classes (tabular)
+    - text target map:    NO because there is no presence of text target in this task
+
+Following the structure in the above example, please make a list of all the target maps needed for the task.
+
+{% endif -%}
+{% include "summarize_cot.jinja" %}

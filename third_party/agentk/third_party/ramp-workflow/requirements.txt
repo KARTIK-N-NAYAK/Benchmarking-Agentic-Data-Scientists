@@ -1,0 +1,8 @@
+numpy>=1.13
+scipy>=0.19
+pandas>=0.19.2
+xarray
+scikit-learn>=0.22
+cloudpickle
+click
+click-config-file==0.6.0

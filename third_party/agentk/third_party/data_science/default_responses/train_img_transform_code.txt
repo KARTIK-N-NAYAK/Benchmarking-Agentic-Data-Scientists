@@ -1,0 +1,15 @@
+<ANS>
+```python
+CustomTrainImageInputTransform: T.Compose = T.Compose([
+    T.Resize((256, 256)),
+    T.RandomHorizontalFlip(p=0.5),
+    T.RandomVerticalFlip(p=0.5),
+    T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+    T.ToTensor(),  # Convert the image to a tensor
+    T.Lambda(
+      lambda x: x.repeat([3 if (i - x.ndim == -3 and d == 1) else 1 for i, d in enumerate(x.shape)])
+    ),
+    T.Lambda(lambda x: x[:3] if x.shape[0] > 3 else x),
+])
+```
+</ANS>

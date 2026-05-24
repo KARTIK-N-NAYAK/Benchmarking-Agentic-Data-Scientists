@@ -1,0 +1,64 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+
+### Modalities Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TARGETS_MODALITY_TRANSFORMS: 1.0}) }}
+
+### Goal
+Your goal is to create a transform function and an inverse transform function for the training text targets.
+If the train tabular targets do not require being transformed, the functions should simply be the identity, i.e. return the targets unchanged.
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+{% if create_transform_txt_target_train and create_transform_txt_target_train.get("code", None) %}
+### This was the resulting code after your last attempt:
+{{ stages_code_dict['create_transform_txt_target_train']['code'] }}
+{% if stages_code_dict['create_transform_txt_target_train']['code_output']|length > 0 %}
+### This was the output:
+```
+{{ stages_code_dict['create_transform_txt_target_train']['code_output'] }}
+```
+{% endif -%}
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test.jinja" -%}
+
+
+Based on the above information and keeping the goal in mind, decide if there are any data tables from the raw data directory that you would like to see (i.e. files such as .CSV, .TSV, .TXT, ...).
+Note that there could be no such tables in the raw directory.
+This means that you think seeing a view and some information of these data frame objects would help you solve the task.
+Select the tables you would like to see by returning a list of full paths.
+In particular, give your answer by following the JSON format:
+```json
+    {
+        "paths": ["<table1_full_path>", "<table2_full_path>", ...],
+    }
+```
+If you do not need to see any table for the time being, simple return an empty structure, i.e.
+```json
+    {
+        "paths": [],
+    }
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

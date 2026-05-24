@@ -1,0 +1,27 @@
+{%- set code_rag = memory.retrieve({memory.mem_keys.RAG_RETRIEVAL: 1.0}) %}
+
+{%- if code %}
+### Previous code
+This is what you tried in your last attempt:
+```python
+{{ code }}
+```
+{%- if code_output %}
+### Output of previous code
+This was the output when running the code above:
+{% if code_output|length > 6000 %}
+{{ (code_output)[-6000:] }}
+{% else -%}
+{{ code_output }}
+{%- endif -%}
+
+{%- endif %}
+{%- endif %}
+
+{%- if code_rag %}
+You may take syntax help from below for coding syntax:
+```python
+{{ code_rag }}
+```
+{%- endif %}
+

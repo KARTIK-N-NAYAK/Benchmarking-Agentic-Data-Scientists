@@ -1,0 +1,10 @@
+{% include "./ds_main_pipeline/_code_report.jinja" %}
+
+{%- if code_error %}
+### The error in your code was:
+```python
+{{ (code_error)[-6000:] }}
+```
+
+You should fix this error.
+{%- endif %}

@@ -1,0 +1,28 @@
+{
+    "kaggle_name": "playground-series-s3e15",
+    "raw_description": "",
+    "task_description": "The main goal of the Kaggle Playground Series 2023 Tabular Tuesday competition is to provide a platform for the Kaggle community to learn, sharpen their skills, and experiment with different aspects of machine learning and data science. The competition is centered around synthetically generated datasets, which are created from real-world data to provide a unique opportunity for participants to quickly iterate through various model and feature engineering ideas.\n\nThe task within this competition is an imputation problem, specifically predicting the missing values of the feature \"x_e_out [-]\". Participants are required to submit a file with a header and the following format: \"id,x_e_out [-]\", where each row represents an instance, the first column is the id, and the second column is the predicted value for the feature \"x_e_out [-]\".\n\nThe competition is evaluated using the Root Mean Squared Error (RMSE) metric, which measures the differences between the predicted and actual values. The lower the RMSE, the better the model's performance.",
+    "data_description": {
+        "target_cols": [
+            "x_e_out [-]"
+        ],
+        "description": "The provided description outlines a Kaggle competition dataset with two main files: a training dataset (`data.csv`) and a sample submission file (`sample_submission.csv`). The data is organized in a specific directory structure on the server, which is reflected in the raw data view of the top-level directory.\n\nHere's a summary of the files and their contents:\n\n- `sample_submission.csv`: This file contains a sample submission format for the competition. It includes an 'id' column to identify each data point and an 'x_e_out [-]' column that is the target variable to be predicted.\n\n- `data.csv`: This file contains the training dataset for the competition. It includes an 'id' column to identify each data point and various feature columns such as 'author', 'geometry', 'pressure [MPa]', 'mass_flux [kg/m2-s]', 'x_e_out [-]', 'D_e [mm]', 'D_h [mm]', 'length [mm]', and 'chf_exp [MW/m2]'. The target variable for this file is also 'x_e_out [-]'.\n\nThe feature and target names relevant for the task are:\n\n- Features: 'author', 'geometry', 'pressure [MPa]', 'mass_flux [kg/m2-s]', 'D_e [mm]', 'D_h [mm]', 'length [mm]', 'chf_exp [MW/m2]'\n- Target: 'x_e_out [-]'\n\nThe files organization in a tree structure (considering the directory structure given in the raw data view of the top-level directory) is as follows:\n\n```\n/nfs/rlteam2/pangu-ds/data/raw/playground-series-s3e15\n\u251c\u2500\u2500 sample_submission.csv\n\u2514\u2500\u2500 data.csv\n```\n\nIn this structure, `sample_submission.csv` and `data.csv` are directly under the top-level directory.",
+        "feature_types": {
+            "id": "num",
+            "author": "cat",
+            "geometry": "cat",
+            "pressure [MPa]": "num",
+            "mass_flux [kg/m2-s]": "num",
+            "D_e [mm]": "num",
+            "D_h [mm]": "num",
+            "length [mm]": "num",
+            "chf_exp [MW/m2]": "num"
+        }
+    },
+    "score_name": "rmse",
+    "metric_description": "The metric description provided is for a regression problem, where the goal is to predict a continuous value. The evaluation metric used is Root Mean Squared Error (RMSE).\n\nRoot Mean Squared Error (RMSE) is a measure of the differences between the values predicted by a model and the values observed. It's the square root of the mean of the squared differences between prediction and actual observation. Here is the mathematical representation:\n\nRMSE = \u221a[(1/N) * \u03a3(predicted_value - actual_value)^2]\n\nWhere:\n- N is the total number of observations\n- \u03a3 is the sum of the squares of residuals (prediction errors)\n- predicted_value is the value predicted by the model\n- actual_value is the actual observed value\n\nFor a user to implement this metric, they would need to:\n\n1. Calculate the difference between the predicted values and the actual values for each instance.\n2. Square these differences.\n3. Calculate the mean of these squared differences.\n4. Take the square root of the mean.\n\nThe input file for the user would be a CSV file with two columns: 'id' and 'x_e_out [-]'. \n\n- The 'id' column is the identifier for each instance.\n- The 'x_e_out [-]' column is the target value that the model needs to predict.\n\nThe user would need to load this file, extract the predicted and actual values, and then use these values to compute the RMSE.\n\nThe docstring for this metric could be something like this:\n\n```\n\"\"\"\nThis function computes the Root Mean Squared Error (RMSE) between the predicted and actual values.\n\nArgs:\n    y_true (array-like): The true (actual) values.\n    y_pred (array-like): The predicted values.\n\nReturns:\n    float: The RMSE score.\n\"\"\"\n```\nThis docstring explains what the function does, what its input arguments are, and what it returns. It's a good practice to have such a docstring for any function that implements a specific metric or algorithm.",
+    "id_col": "id",
+    "prediction_type": "regression",
+    "title": "Kaggle heat flux",
+    "kaggle_name": "playground-series-s3e15"
+}

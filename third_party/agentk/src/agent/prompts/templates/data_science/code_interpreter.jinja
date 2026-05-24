@@ -1,0 +1,39 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{%- if cot_type in ["few_shot", "few_shot_cot", "react"] %}
+{% include "context_example.jinja" %}
+{%- endif %}
+{{memory.retrieve({memory.mem_keys.OBSERVATION: 1.0})}}
+
+{#{%- set thought = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) -%}#}
+{%- set thought = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) -%}
+{%- if thought %}
+Your current thought: {{thought}}
+{%- endif %}
+
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) -%}
+{%- if code  %}
+Previously generated code: {{memory.retrieve({memory.mem_keys.CODE: 1.0})}}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+
+{%- if code_error == "" %}
+The code runs successfully, and here is the code output: {{memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})}}
+Please write python code to realize your thought.
+You can copy and reuse the code from the previous step.
+But remember that it is a separate python script from the one you write in this step, so you can not directly refer to any variables in the previous code.
+{%- else %}
+The code has bugs, and here is the error message: {{code_error}}
+Please modify the code to make it work based on your current thought.
+Note that your proposed fix should work by simply running the modified code alone.
+E.g., if the code fails due to some missing package, you should install the package inside the code file, instead of installing the package by hand before running the code.
+{%- endif %}
+{%- else %}
+Please write python code to realize your thought.
+{%- endif %}
+
+Respond in the following format:
+Code:
+```python
+Your code here
+```

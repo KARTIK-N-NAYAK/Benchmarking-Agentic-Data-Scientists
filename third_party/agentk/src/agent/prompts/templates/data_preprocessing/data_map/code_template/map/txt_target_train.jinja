@@ -1,0 +1,20 @@
+"""
+This script creates the data map for the training text targets, i.e. `train_txt_target_map.csv`.
+This map is a `pd.DataFrame` object populated with respect to the data description and the data present in the raw data directory.
+The first column of the created map must be the "id" of each test data point.
+The subsequent columns of `train_txt_target_map.csv` are the training text targets, if any.
+
+>>> # Example
+>>> train_txt_target_map = pd.DataFrame(columns=["id", "txt_target1", "txt_target2", ...])
+
+Create train_txt_target_map
+"""
+# <｜fim▁begin｜>
+import os
+import pandas as pd
+# <｜fim▁hole｜>
+
+# <｜fim▁end｜>
+# save
+train_txt_target_map.to_csv("./train_txt_target_map.csv", index=False)
+print("`train_txt_target_map.csv` created and saved.")

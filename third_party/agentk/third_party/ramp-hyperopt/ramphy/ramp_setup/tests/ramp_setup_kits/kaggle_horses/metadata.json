@@ -1,0 +1,49 @@
+{
+    "title": "Kaggle horse survival",
+    "kaggle_name": "playground-series-s3e22",
+    "raw_description": "",
+    "task_description": "",
+    "data_description": {
+        "target_cols": [
+            "outcome"
+        ],
+        "positive_target_values" : {
+            "outcome": "lived"
+        },
+        "description": "",
+        "feature_types": {
+          "id": "num",
+          "surgery": "cat",
+          "age": "cat",
+          "hospital_number": "cat",
+          "rectal_temp": "num",
+          "pulse": "num",
+          "respiratory_rate": "num",
+          "temp_of_extremities": "cat",
+          "peripheral_pulse": "cat",
+          "mucous_membrane": "cat",
+          "capillary_refill_time": "cat",
+          "pain": "cat",
+          "peristalsis": "cat",
+          "abdominal_distention": "cat",
+          "nasogastric_tube": "cat",
+          "nasogastric_reflux": "cat",
+          "nasogastric_reflux_ph": "num",
+          "rectal_exam_feces": "cat",
+          "abdomen": "cat",
+          "packed_cell_volume": "num",
+          "total_protein": "num",
+          "abdomo_appearance": "cat",
+          "abdomo_protein": "num",
+          "surgical_lesion": "cat",
+          "lesion_1": "num",
+          "lesion_2": "num",
+          "lesion_3": "num",
+          "cp_data": "cat"
+        }
+    },
+    "score_name": "f1-micro",
+    "metric_description": "",
+    "id_col": "id",
+    "prediction_type": "binary classification"
+}

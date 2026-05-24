@@ -1,0 +1,32 @@
+{
+    "title": "Kaggle synthanic",
+    "kaggle_name": "tabular-playground-series-apr-2021",
+    "raw_description": "",
+    "task_description": "",
+    "data_description": {
+        "target_cols": [
+            "Survived"
+        ],
+        "positive_target_values" : {
+            "Survived": "1"
+        },
+        "description": "",
+        "feature_types": {
+              "PassengerId": "num",
+              "Pclass": "num",
+              "Name": "text",
+              "Sex": "cat",
+              "Age": "num",
+              "SibSp": "num",
+              "Parch": "num",
+              "Ticket": "text",
+              "Fare": "num",
+              "Cabin": "text",
+              "Embarked": "cat"
+            }
+    },
+    "score_name": "accuracy",
+    "metric_description": "",
+    "id_col": "PassengerId",
+    "prediction_type": "binary classification"
+}

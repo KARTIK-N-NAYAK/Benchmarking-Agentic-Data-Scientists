@@ -1,0 +1,15 @@
+{%- set code_passed = memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.UNIT_TEST_RAN: 1.0}) and (code_passed==None or (code_passed!=None and code_passed)) %}
+{% if memory.retrieve({memory.mem_keys.UNIT_TEST_PASSED: 1.0}) %}
+### This was the output of the unit test:
+```
+{{ memory.retrieve({memory.mem_keys.UNIT_TEST_OUTPUT: 1.0}) }}
+```
+{% else -%}
+### The error in the unit test was:
+```
+{{ memory.retrieve({memory.mem_keys.UNIT_TEST_ERROR: 1.0}) }}
+```
+{%- block unit_test_error_instruction %}{% endblock -%}
+{% endif -%}
+{% endif -%}

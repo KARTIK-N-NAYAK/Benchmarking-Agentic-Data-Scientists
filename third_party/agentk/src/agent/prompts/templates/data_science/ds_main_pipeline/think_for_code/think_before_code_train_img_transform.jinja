@@ -1,0 +1,48 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set summarize_cot = memory.retrieve({memory.mem_keys.SUMMARIZE_COT: 1.0}) %}
+{%- set img_data_statistics = memory.retrieve({memory.mem_keys.IMG_DATA_STATISTICS: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+You have to generate a code to transform the images using a composition of torchvision transforms.
+You need to write a pytorch torchvision.transforms.Compose sequence that transforms the images appropriately with respect to the task.
+You need to make sure the images are also transformed to torch.Tensor at some point as the images will be fed to a vision neural network.
+You can use any image transforms (Resize, RandomCrop, ToTensor, ...) or even write custom transforms with Lambda() ...
+Your main priority should be final performance of the model rather than computational efficiency but 20 epochs must finish in under 10 hours on 32GB GPU.
+On tasks with non-square images, resizing to a square can distort the aspect ratio of the image but preserves all the information. An alternative is maintaining the aspect ratio while resizing and then cropping to a square but this may crop out important parts of the image. Choose a strategy that best suits the task.
+You should think carefully about the nature of the task and avoid resizing, cropping or augmenting the images in a way that could impede the models trained on the transformed data.
+If using any normalization, only do so at the end after having transformed, resized and dealt with channels.
+{%- if img_data_statistics != None %}
+Note that the statistics for this image dataset are the following (in case you need them):
+{%- for key, value in img_data_statistics.items() %}
+  * the {{ key }} is: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{% include "./ds_main_pipeline/code_error_report_think.jinja" %}
+
+Output a plan presented with maximum 4 bullet points describing the different steps to construct a pytorch torchvision transforms composition.
+The plan should be tailored to the current task as it will be used to guide the implementation of the image transforms.
+{% include "./ds_main_pipeline/plan_cot.jinja" %}

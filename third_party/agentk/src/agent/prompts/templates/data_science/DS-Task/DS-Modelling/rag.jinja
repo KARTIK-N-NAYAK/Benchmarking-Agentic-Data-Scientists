@@ -1,0 +1,8 @@
+[[ USER ]]
+
+{%- set thought = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) -%}
+{%- if thought %}
+{{thought.content}}
+{%- else %}
+NO RAG
+{%- endif %}

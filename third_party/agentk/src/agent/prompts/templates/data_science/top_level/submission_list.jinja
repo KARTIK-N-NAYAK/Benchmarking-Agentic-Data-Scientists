@@ -1,0 +1,14 @@
+{%- set submission_list = memory.retrieve({memory.mem_keys.SUBMISSION_LIST: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{% if submission_list|length == 0 %}
+No solution have been generated so far.
+{% if current_submission is none%}
+You need to generate at least one solution to solve the task
+{% endif %}
+
+{% else %}
+This is the list of the solutions that have already been generated:
+{% for submission in submission_list %}
+* {{ submission.name }}: {{ submission.submission_state.summary }}
+{% endfor %}
+{% endif %}

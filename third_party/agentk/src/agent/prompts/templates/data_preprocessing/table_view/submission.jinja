@@ -1,0 +1,69 @@
+{% set df_inv_transform_view_tab = memory.retrieve({memory.mem_keys.INV_TRANSFORM_HEAD_VIEW_TAB: 1.0}) %}
+{% set df_inv_transform_view_txt = memory.retrieve({memory.mem_keys.INV_TRANSFORM_HEAD_VIEW_TXT: 1.0}) %}
+{% set df_inv_transform_view_img = memory.retrieve({memory.mem_keys.INV_TRANSFORM_HEAD_VIEW_IMG: 1.0}) %}
+{% set predict_table_info_tab = memory.retrieve({memory.mem_keys.PRED_TABLE_INFO_TAB: 1.0}) %}
+{% set predict_table_info_txt = memory.retrieve({memory.mem_keys.PRED_TABLE_INFO_TXT: 1.0}) %}
+{% set predict_table_info_img = memory.retrieve({memory.mem_keys.PRED_TABLE_INFO_IMG: 1.0}) %}
+{% set raw_id_column_name = memory.retrieve({memory.mem_keys.RAW_ID_COLUMN_NAME: 1.0}) %}
+{% set raw_target_column_names = memory.retrieve({memory.mem_keys.RAW_TARGETS_COLUMN_NAMES: 1.0}) %}
+{% set sample_submission_head = memory.retrieve({memory.mem_keys.SAMPLE_SUBMISSION_HEAD: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+
+### Submission Format Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_SUBMISSION_FORMAT: 1.0}) }}
+
+
+### View of the sample submission:
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+
+### Objective
+Your goal is to write the submission format function that takes as input a DataFrame containing target predictions, and format it to follow the submission file format.
+**Important:** Use the column names in the sample submission table as a reference.
+
+{% if df_inv_transform_view_tab is not none %}
+#### View of the first few rows of the input DataFrame for tabular targets:
+{{ df_inv_transform_view_tab }}
+
+{{ predict_table_info_tab }}
+{% endif -%}
+
+{% if df_inv_transform_view_txt is not none %}
+#### View of the first few rows of the input DataFrame for text targets:
+{{ df_inv_transform_view_txt }}
+
+{{ predict_table_info_txt }}
+{% endif -%}
+
+{% if df_inv_transform_view_img is not none %}
+#### View of the first few rows of the input DataFrame for image targets:
+{{ df_inv_transform_view_img }}
+
+{{ predict_table_info_img }}
+{% endif -%}
+
+Based on the above information and keeping the goal in mind, decide if there are any files from the raw data directory that you would like to see (i.e. files such as .CSV, .TSV, .TXT...).
+This means that you think seeing a view and some information from these files is relevant to the task.
+Select the names of the files you would like to see by returning a list of full paths.
+Explain briefly your decision and, give your final answer by following the JSON format:
+```json
+    {
+        "paths": ["<file1_full_path>", "<file2_full_path>", ...],
+    }
+```
+If you do not need to see any file for the time being, simple return an empty structure, i.e.
+```json
+    {
+        "paths": [],
+    }
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

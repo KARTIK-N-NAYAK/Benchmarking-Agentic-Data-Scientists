@@ -1,0 +1,82 @@
+{% set create_map_tab_target_train = stages_code_dict.get("create_map_tab_target_train", dict()) %}
+{% set raw_data_view = memory.retrieve({memory.mem_keys.RAW_DATA_VIEW: 1.0}) %}
+{% set summarize_cot = memory.retrieve({memory.mem_keys.SUMMARIZE_COT: 1.0}) %}
+{% set task_category = memory.retrieve({memory.mem_keys.TASK_CATEGORY: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+# Data Description
+{{ memory.retrieve({memory.mem_keys.RAW_DATA_DESCRIPTION: 1.0}) }}
+
+### View of the top-level directory, these are the data you can use to solve this task:
+```
+{{ raw_data_view }}
+```
+
+### Task Category
+The task category that you detected is: {{ task_category }}
+
+# Modalities Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TARGETS_MODALITY_MAPS: 1.0}) }}
+
+{% if memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) %}
+### These are some of the tables you have asked information about:
+{{ memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) %}
+### These are some tips to avoid common mistakes in the code:
+{{ memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+{% if create_map_tab_target_train and create_map_tab_target_train.get("code", None) %}
+### This was the resulting code after your last attempt:
+{{ stages_code_dict['create_map_tab_target_train']['code'] }}
+{% if stages_code_dict['create_map_tab_target_train']['code_output']|length > 0 %}
+### This was the output:
+```
+{{ stages_code_dict['create_map_tab_target_train']['code_output'] }}
+```
+{% endif -%}
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test.jinja" -%}
+
+
+Your goal is to create a map for the training tabular targets.
+The first column is the "id" containing the unique ID of each data point.
+
+The subsequent columns are the tabular training targets for `train_tab_target_map.csv`, do not do any transform on the
+training target keep the original target names.
+For example if you have a classification task and the tabular target are  names of the animals you should keep the animals
+names as tabular target.
+Do not include input columns in this table.
+{#It is important to ensure that input and target maps have the same length of rows.#}
+
+**Important!** for each tabular target column include in the name the nature of the tabular target: classification or regression.
+For example if there are two tabular targets `price` and `categories` you have to name the columns like this:
+price_regression, categories_classification
+Note that this must be aligned with the task category you detected earlier: {{ task_category }}
+
+Now, write a **short** (no more than 3 steps) plan of how you would do that.
+If there is an error in a previous attempt, explain in **one** sentence why this error happened and how to fix it.
+Do not write code yet, simply the plan.
+{% include "plan_cot.jinja" %}

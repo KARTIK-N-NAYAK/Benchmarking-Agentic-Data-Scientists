@@ -1,0 +1,34 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+
+### Modalities Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_INPUTS_MODALITY_MAPS: 1.0}) }}
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TARGETS_MODALITY_MAPS: 1.0}) }}
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TARGETS_MODALITY_TRANSFORMS: 1.0}) }}
+
+### Goal
+Your goal is to write the metric function that takes as inputs the true labels `y_true` and the predicted ones `y_pred`.
+Note that they are in the submission format already.
+
+Based on the above information and keeping the goal in mind, decide if there are any data tables from the raw data directory that you would like to see (i.e. files such as .CSV, .TSV, .TXT, ...).
+Note that there could be no such tables in the raw directory.
+This means that you think seeing a view and some information of these data frame objects would help you solve the task.
+Select the tables you would like to see by returning a list of full paths.
+In particular, give your answer by following the JSON format:
+```json
+    {
+        "paths": ["<table1_full_path>", "<table2_full_path>", ...],
+    }
+```
+If you do not need to see any table for the time being, simple return an empty structure, i.e.
+```json
+    {
+        "paths": [],
+    }
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

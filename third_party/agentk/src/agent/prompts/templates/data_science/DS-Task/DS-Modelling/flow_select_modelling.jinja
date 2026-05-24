@@ -1,0 +1,27 @@
+{% include "system_prompt.jinja" %}
+
+{% if memory.retrieve({memory.mem_keys.RAN_MODELLING: 1.0}) == "True" %}
+Your response should not be an action or a thought, but an available command from the list, using the following format:
+Command: ...
+[[ USER ]]
+{% include "DS-Task/DS-Modelling/trajectory_modelling.jinja" %}
+Here is a list of the available commands:
+
+
+think_and_model: Think and code a model using a validation dataset
+optimize_and_submit: Optimize your best model for hyperparameters.
+
+Here are some further guidances on how to choose the command:
+1. If you think you have already achieved good performance with the model, and the code does not have any error, then choose the command optmize_and_submit to finalize your model.
+2. If the code has any import errors or indexing issues, fix them first using think_and_validate_code before optmize_and_submit.
+3. You should choose optmize_and_submit if good performance on all metrics is achieved already.
+4. Only choose the command think_and_validate_code if you think you need to fix an error or the accuracy can be significantly increased.
+
+Choose a command that will help you complete the task.
+{% else %}
+
+[[ USER ]]
+Please focus only on outputting a command here.
+Please only output the following string: 'Command: think_and_model'
+
+{% endif %}

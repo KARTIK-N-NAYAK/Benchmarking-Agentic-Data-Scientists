@@ -1,0 +1,10 @@
+_target_: agent.models.openai_api.OpenAIAPILanguageBackend
+_partial_: true
+client:
+  _target_: huggingface_hub.InferenceClient
+  headers:
+    x-use-cache: "false"
+#  model: ??? # This can instead be passed with model_id
+#  token: ${oc.env:HF_TOKEN}
+model_id: ???
+max_tokens: 3000  # The model seems to only generate 100 tokens if this is not set

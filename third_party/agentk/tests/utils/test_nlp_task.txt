@@ -1,0 +1,588 @@
+<ANS>
+**Main Goal:**
+Train a classifier to predict the sentiment of synthetic product reviews as either positive or negative.
+
+**Task Type:**
+Text classification.
+</ANS>
+
+<ANS>
+### Data Directory Structure and File Organization
+
+#### Absolute Path: `./custom_task_test`
+
+- **Directory: `./custom_task_test/`**
+  - **File: `test.csv`**
+    - **Columns:**
+      - `id` (int64): Unique identifier for each review.
+      - `text` (object): Text content of the review.
+      - `label` (object): Sentiment label (positive or negative).
+    - **Sample Values:**
+      - `text`: ["I'm very satisfied", 'Not worth it', 'Absolutely wonderful', 'This is terrible', 'I hate this', 'Best product ever', 'Worst experience ever', 'This is amazing']
+      - `label`: ['positive', 'negative']
+
+  - **File: `train.csv`**
+    - **Columns:**
+      - `id` (int64): Unique identifier for each review.
+      - `text` (object): Text content of the review.
+      - `label` (object): Sentiment label (positive or negative).
+    - **Sample Values:**
+      - `text`: ["I'm very satisfied", 'Really disappointing', 'Best product ever', 'Not worth it', 'This is amazing', 'I love this!', 'This is terrible']
+      - `label`: ['positive', 'negative']
+
+  - **File: `sample_submission.csv`**
+    - **Columns:**
+      - `id` (int64): Unique identifier for each review.
+      - `label` (float64): Predicted sentiment label (NaN for submission).
+    - **Sample Values:**
+      - `id`: [0, 1, 2, 3, 4, ...]
+
+### Summary of Feature and Target Names
+
+- **Feature Columns:**
+  - `id` (int64): Unique identifier for each review.
+  - `text` (object): Text content of the review.
+
+- **Target Column:**
+  - `label` (object): Sentiment label (positive or negative).
+
+### Note
+- The data is saved under the directory `./custom_task_test`.
+- The files and paths must not be altered.
+</ANS>
+
+<ANS>
+### Metric Description: Accuracy
+
+**Accuracy** is a common evaluation metric used for classification tasks. It measures the proportion of correctly classified instances out of the total number of instances.
+
+#### Computation:
+
+1. **True Positives (TP)**: The number of instances where the predicted label matches the actual label.
+2. **Total Instances (N)**: The total number of instances in the dataset.
+
+The accuracy is calculated using the formula:
+\[ \text{Accuracy} = \frac{\text{TP}}{N} \]
+
+#### Steps to Compute Accuracy:
+
+1. **Collect Predictions**: Obtain the predicted labels for each instance in the test set.
+2. **Compare with True Labels**: For each instance, compare the predicted label with the true label.
+3. **Count Correct Predictions**: Count the number of instances where the predicted label matches the true label.
+4. **Calculate Accuracy**: Divide the number of correct predictions by the total number of instances.
+
+#### Example:
+
+- If you have a test set with 100 instances and your model correctly predicts the labels for 85 of them, the accuracy would be:
+\[ \text{Accuracy} = \frac{85}{100} = 0.85 \]
+
+This metric provides a straightforward measure of how well the model is performing in terms of making correct predictions.
+</ANS>
+
+<ANS>
+### Submission Format Summary
+
+- **Input ID Column Name:** `id`
+- **Target Column Name:** `label`
+- **Type of Target:** Categorical
+- **Allowed Values for Target:**
+  - `positive` (for reviews expressing satisfaction or praise)
+  - `negative` (for reviews expressing dissatisfaction or complaints)
+
+The submission file should contain two columns: `id` and `label`. The `id` column corresponds to the unique identifier for each review, and the `label` column should contain the predicted sentiment (`positive` or `negative`) for each review.
+</ANS>
+
+<ANS>
+For the given text classification task, the input modalities needed to solve the task are as follows:
+
+- **tabular input map**: NO because there is no presence of tabular data (other than the text and labels, which are primarily text-based).
+- **image input map**: NO because there are no images in this task.
+- **text input map**: YES because the task involves classifying text data (product reviews).
+
+The full list is then:
+
+- **tabular input map**: NO because there is no presence of tabular data.
+- **image input map**: NO because there are no images in this task.
+- **text input map**: YES as there is text data to be classified -> related files:
+  - `./custom_task_test/train.csv`
+  - `./custom_task_test/test.csv`
+</ANS>
+
+<ANS>
+### Target Maps Needed for the Task
+
+- **Tabular Target Map:**
+  - **YES** for the classification labels
+  - **Related Files:**
+    - `train.csv`
+    - `test.csv`
+    - `sample_submission.csv`
+
+- **Image Target Map:**
+  - **NO** as we are not predicting images in this task, we are predicting classes (tabular)
+
+- **Text Target Map:**
+  - **NO** because there is no presence of text target in this task, we are predicting sentiment labels which are tabular
+
+### Summary
+- The input is textual (`text` column in `train.csv` and `test.csv`).
+- The target is tabular (`label` column in `train.csv` and `test.csv`).
+- The task involves text classification, where the goal is to predict sentiment labels (positive or negative) based on the text content.
+</ANS>
+
+<ANS>
+### Target Transforms Needed for the Task
+
+- **Tabular Target Transform:**
+  - **YES** for the classification labels
+  - **Description:**
+    - **Transform Function:**
+      - Converts the categorical labels ('positive' and 'negative') into numerical labels (e.g., 1 for 'positive' and 0 for 'negative').
+    - **Inverse Transform Function:**
+      - Converts the numerical labels back into their original categorical format ('positive' and 'negative') for the submission.
+
+- **Image Target Transform:**
+  - **NO** as we are not predicting images in this task, we are predicting classes (tabular).
+
+- **Text Target Transform:**
+  - **NO** because there is no presence of text target in this task, we are predicting sentiment labels which are tabular.
+
+### Detailed Description of Tabular Target Transform
+
+- **Transform Function:**
+  - **Purpose:** To prepare the target labels for training a machine learning model.
+  - **Input:** Categorical labels ('positive' and 'negative').
+  - **Output:** Numerical labels (1 for 'positive', 0 for 'negative').
+  - **Example:**
+    - Input: ['positive', 'negative', 'positive']
+    - Output: [1, 0, 1]
+
+- **Inverse Transform Function:**
+  - **Purpose:** To convert the model's numerical predictions back into the categorical format required for the submission.
+  - **Input:** Numerical labels (1 for 'positive', 0 for 'negative').
+  - **Output:** Categorical labels ('positive' and 'negative').
+  - **Example:**
+    - Input: [1, 0, 1]
+    - Output: ['positive', 'negative', 'positive']
+
+### Summary
+- The task involves text classification, where the goal is to predict sentiment labels (positive or negative) based on the text content.
+- The target transform is necessary to convert the categorical labels into a numerical format suitable for machine learning models and then back to the categorical format for submission.
+</ANS>
+
+<ANS>
+```json
+{
+    "tabular_inputs_needed": False,
+    "image_inputs_needed": False,
+    "text_inputs_needed": True
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "tabular_targets_needed": True,
+    "image_targets_needed": False,
+    "text_targets_needed": False
+}
+```
+</ANS>
+
+<ANS>
+The task involves classifying text into two categories, 'positive' or 'negative', which is a binary classification problem.
+
+```json
+{
+    "task_type": "binary classification"
+}
+```
+</ANS>
+
+<ANS>
+To create `train_txt_input_map.csv`, I need to see `train.csv` to extract the "text" column and assign unique IDs.
+
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+### Plan:
+1. Load the `train.csv` file into a pandas DataFrame.
+2. Select the `id` and `text` columns from the DataFrame.
+3. Save the selected columns to a new CSV file named `train_txt_input_map.csv`.
+
+### Error Handling:
+- If the DataFrame does not load correctly, ensure the file path is correct and the file is in the expected format.
+</ANS>
+
+<ANS>
+```python
+import os
+import pandas as pd
+import numpy as np
+
+# Define the absolute path to the train.csv file
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+train_file_path = os.path.join(raw_root,"custom_task_test", "train.csv")
+
+# Load the train.csv file into a pandas DataFrame
+train_df = pd.read_csv(train_file_path)
+
+# Select the 'id' and 'text' columns from the DataFrame
+train_txt_input_map = train_df[['id', 'text']].copy()
+
+# Ensure the 'id' column is named correctly
+train_txt_input_map.columns = ['id', 'txt_input1']
+
+# Save the selected columns to a new CSV file named train_txt_input_map.csv
+train_txt_input_map = train_txt_input_map.replace(np.nan, "")
+train_txt_input_map.to_csv("./train_txt_input_map.csv", quoting=csv.QUOTE_ALL, encoding="utf-8", index=False)
+print("`train_txt_input_map.csv` created and saved.")
+```
+
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The code reads the train.csv file, creates a DataFrame with 'id' and 'text' columns, replaces any NaN values with empty strings, and saves the resulting DataFrame as train_txt_input_map.csv."
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Extract the `id` and `label` columns from the `train.csv` file.**
+2. **Rename the `label` column to `label_classification` to reflect the nature of the target.**
+3. **Save the resulting DataFrame to a new CSV file named `train_tab_target_map.csv`.**
+
+### Error Handling
+- If the `label` column was renamed incorrectly in a previous attempt, ensure the correct naming convention (`label_classification`) is used.
+</ANS>
+
+<ANS>
+```python
+"""
+This script creates the data map for the tabular training targets, i.e. `train_tab_target_map.csv`.
+This map is a `pd.DataFrame` object populated with respect to the data description and the data present in the raw data directory.
+The first column of the created map must be the "id" of each test data point.
+The subsequent columns of `train_tab_target_map.csv` are the tabular training target features, if any.
+
+>>> # Example
+>>> train_tab_target_map = pd.DataFrame(columns=["id", "tab_target_feature1", "tab_target_feature2", ...])
+
+Create train_tab_target_map
+"""
+# <｜fim▁begin｜>
+import os
+import pandas as pd
+
+# Define the absolute path to the train.csv file
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+train_file_path = os.path.join(raw_root,"custom_task_test", "train.csv")
+
+# Load the train.csv file into a pandas DataFrame
+train_df = pd.read_csv(train_file_path)
+
+# Select the 'id' and 'label' columns from the DataFrame
+train_tab_target_map = train_df[['id', 'label']].copy()
+
+# Rename the 'label' column to 'label_classification'
+train_tab_target_map.columns = ['id', 'label_classification']
+
+# Save the resulting DataFrame to a new CSV file named train_tab_target_map.csv
+# <｜fim▁end｜>
+# save
+train_tab_target_map.to_csv("./train_tab_target_map.csv", index=False)
+print("`train_tab_target_map.csv` created and saved.")
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script extracts 'id' and 'label' columns from 'train.csv', renames 'label' to 'label_classification', and saves the result to 'train_tab_target_map.csv'."
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "label_classification": "top_k(1, None)"
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+### Plan:
+1. **Read the Test CSV File**: Load the test data from `./custom_task_test/test.csv` into a DataFrame.
+2. **Extract the Required Columns**: Select the "id" and "text" columns from the DataFrame.
+3. **Save the Resulting DataFrame**: Write the selected columns to a new CSV file named `test_txt_input_map.csv`.
+
+### Error Handling:
+- If an error occurs due to missing or incorrect file paths, ensure the file paths are correct and the file exists at the specified location.
+</ANS>
+
+<ANS>
+```python
+# Define the absolute path to the test.csv file
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+test_file_path = os.path.join(raw_root,"custom_task_test", "test.csv")
+
+# Load the test.csv file into a pandas DataFrame
+test_df = pd.read_csv(test_file_path)
+
+# Select the 'id' and 'text' columns from the DataFrame
+test_txt_input_map = test_df[['id', 'text']].copy()
+
+# Ensure the 'id' column is named correctly
+test_txt_input_map.columns = ['id', 'txt_input1']
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script reads the test.csv file, extracts the 'id' and 'text' columns, renames 'text' to 'txt_input1', and saves the result to test_txt_input_map.csv."
+}
+```
+</ANS>
+
+<ANS>
+To address the task, I don't need to examine any files from the raw data directory. The structure of the submission is clear from the sample provided, so no additional file inspection is necessary.
+
+```json
+{
+    "paths": []
+}
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Read the Sample Submission File:** Load the sample submission file to ensure the structure and column names are correct.
+2. **Merge Predictions with Sample Submission:** Merge the predictions DataFrame with the sample submission DataFrame on the `id` column to align the predictions with the correct IDs.
+3. **Fill the Label Column:** Fill the `label` column in the sample submission DataFrame with the predicted labels from the predictions DataFrame.
+
+### Error Explanation (if applicable)
+- **Error:** If the `id` column in the predictions DataFrame does not match the `id` column in the sample submission DataFrame, the merge will fail.
+- **Fix:** Ensure that the `id` column in both DataFrames is consistent and contains the same values.
+</ANS>
+
+
+<ANS>
+```python
+"""
+This script creates a function that takes an input Dataframe and format it to follow the df_sample_submission format
+"""
+# useful imports
+import os
+import numpy as np
+import pandas as pd
+
+
+### Submission format definition
+def df_to_submission_format(
+    input_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Format the input_df to the submission format DataFrame
+    Args:
+        input_df: DataFrame to be formatted
+    Return:
+        format_submission_df: DataFrame formatted
+    """
+    # Read the sample submission file
+    raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+    sample_submission_path = os.path.join(raw_root,"custom_task_test", "sample_submission.csv")
+    sample_submission = pd.read_csv(sample_submission_path)
+
+    # Merge the input_df with the sample submission on 'id'
+    merged_df = pd.merge(sample_submission, input_df, on='id', how='left')
+
+    # Fill the 'label' column in the sample submission with the predicted labels
+    merged_df['label'] = merged_df['label_y'].fillna(merged_df['label_x'])
+
+    # Select only the required columns for the submission
+    format_submission_df = merged_df[['id', 'label']]
+
+    return format_submission_df
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The function `df_to_submission_format` merges an input DataFrame with a sample submission DataFrame, overwriting the 'label' column with predicted labels, and returns the formatted DataFrame ready for submission."
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "paths": [],
+    }
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Identify the Maximum Probability Class**: For each row, determine whether the `label_negative` or `label_positive` probability is higher.
+2. **Assign the Label**: Based on the maximum probability, assign the `label` column with either `'positive'` or `'negative'`.
+3. **Construct the Final DataFrame**: Create the final DataFrame with the `text` and `label` columns, ensuring the format matches the required submission format.
+
+### Error Handling
+- If the probabilities sum to more than 1 or less than 1, ensure the probabilities are normalized before identifying the maximum probability.
+</ANS>
+
+<ANS>
+```python
+"""
+This script creates a function that takes an input Dataframe and formats it to follow the df_sample_submission format
+"""
+# useful imports
+import os
+import numpy as np
+import pandas as pd
+
+
+### Submission format definition
+def df_to_submission_format(
+    input_df: pd.DataFrame,
+) ->  pd.DataFrame:
+    """
+    Format the input_df to the submission format DataFrame
+    Args:
+        input_df: DataFrame to be formatted
+    Return:
+        format_submission_df: DataFrame formatted
+    """
+    # Ensure the input DataFrame has the required columns
+    required_columns = ['id', 'label']
+    if not all(col in input_df.columns for col in required_columns):
+        raise ValueError(f"Input DataFrame is missing one or more required columns: {required_columns}")
+
+    # Ensure the label column contains only allowed values
+    allowed_values = {'positive', 'negative'}
+    if not set(input_df['label']).issubset(allowed_values):
+        raise ValueError(f"Label column contains invalid values. Allowed values are: {allowed_values}")
+
+    # Create the submission DataFrame
+    format_submission_df = input_df[['id', 'label']].copy()
+
+    return format_submission_df
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "Function to format an input DataFrame to the required submission format, ensuring it has the correct columns and valid label values."
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "paths": [],
+    }
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Initialize a Counter**: Start by initializing a counter to keep track of the number of correct predictions.
+2. **Iterate and Compare**: Loop through the `y_true` and `y_pred` arrays simultaneously, comparing each pair of true and predicted labels.
+3. **Compute and Return Accuracy**: After the loop, compute the accuracy by dividing the number of correct predictions by the total number of instances, and return this value.
+
+### Error Handling (if applicable)
+- **Error**: If the lengths of `y_true` and `y_pred` do not match, an error will occur during iteration.
+- **Fix**: Ensure that `y_true` and `y_pred` are of the same length before starting the comparison.
+</ANS>
+
+<ANS>
+```python
+"""
+This script creates a function that takes the predicted output `y_pred` and the true output `y_true`
+and returns the value of the metric corresponding to the task.
+"""
+# useful imports
+import os
+import numpy as np
+import pandas as pd
+from torch import Tensor
+
+# metric definition
+def metric_function(
+        y_pred: pd.DataFrame | Tensor,
+        y_true: pd.DataFrame | Tensor,
+) -> float:
+    """
+    Computes the metric on (a batch of) inputs and returns the result.
+    Args:
+        y_pred: the predicted target
+        y_true: the true target
+    """
+    # Ensure y_true and y_pred are of the same length
+    if len(y_true) != len(y_pred):
+        raise ValueError("The length of y_true and y_pred must be the same.")
+
+    # Drop the 'id' column if present
+    if 'id' in y_true.columns:
+        y_true = y_true.drop(columns=['id'])
+    if 'id' in y_pred.columns:
+        y_pred = y_pred.drop(columns=['id'])
+
+    # Convert to numpy arrays for easier comparison
+    y_true = y_true.values.flatten()
+    y_pred = y_pred.values.flatten()
+
+    # Initialize counter for correct predictions
+    correct_predictions = 0
+
+    # Iterate and compare each pair of true and predicted labels
+    for true_label, pred_label in zip(y_true, y_pred):
+        if true_label == pred_label:
+            correct_predictions += 1
+
+    # Compute and return the accuracy
+    accuracy = correct_predictions / len(y_true)
+    return accuracy
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The metric function computes accuracy by comparing true and predicted labels, ensuring they are of the same length and dropping any 'id' columns."
+}
+```
+</ANS>

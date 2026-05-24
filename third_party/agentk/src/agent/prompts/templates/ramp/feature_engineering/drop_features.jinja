@@ -1,0 +1,54 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+# Task description
+The task is a {{ metadata["prediction_type"] }} task and here is the description:
+{{ metadata["task_description"] }}
+
+# Data
+Here is a vue of the datasets:
+{{data}}
+
+# Metadata
+And here are the related metadata describing the task and the data:
+{{metadata}}
+
+
+From the above information, your goal is to select one or more features in the dataset to be removed. 
+The goal is to remove features that, based on your analysis of the metadata, you think might negatively impact the performance of the model that will be trained on the dataset.
+Your response should not be an action or a thought, but an available feature from the list.
+If you think none of the features should be removed, your response should be "none".
+
+
+You should only select the features that you think would improve the performance of the model when removed.
+Your answer must be formatted as json. This means that it should be formatted as follow:
+
+```json
+    {
+        "features_to_drop": ["<feature_to_drop_1>", "<feature_to_drop_2>"]
+    }
+```
+
+Here is an example of the response you should give when the feature to drop is called 'hours worked':
+
+```json
+    {
+        "features_to_drop": ["hours worked"]
+    }
+```
+
+Here is an example of the response you should give if you want to remove two features named "name" and "surname":
+
+```json
+    {
+        "features_to_drop": ["name", "surname"]
+    }
+```
+
+Here is an example of the response you should give when you think no feature should be dropped:
+
+```json
+    {
+        "features_to_drop": ["none"]
+    }
+```

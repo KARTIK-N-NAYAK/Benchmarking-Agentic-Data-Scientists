@@ -1,0 +1,86 @@
+{% set fetched_raw_data = memory.retrieve({memory.mem_keys.FETCHED_RAW_DATA: 1.0}) %}
+{% set summarized_task_description = memory.retrieve({memory.mem_keys.SUMMARIZED_TASK_DESCRIPTION: 1.0}) %}
+{% set raw_table_info = memory.retrieve({memory.mem_keys.RAW_TABLE_INFO: 1.0}) %}
+{% set has_sample_submission = memory.retrieve({memory.mem_keys.HAS_SAMPLE_SUBMISSION: 1.0}) %}
+{% set sample_submission_head = memory.retrieve({memory.mem_keys.SAMPLE_SUBMISSION_HEAD: 1.0}) %}
+{% set task_category = memory.retrieve({memory.mem_keys.TASK_CATEGORY: 1.0}) %}
+{% set column_types = memory.retrieve({memory.mem_keys.COLUMN_TYPES: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+This is the task description:
+{{ summarized_task_description }}
+
+The task category is {{ task_category }}
+
+{% if has_sample_submission %}
+### View of the sample submission:
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+{% endif -%}
+
+The column types are:
+{{ column_types }}
+
+Based on the above information, write the adequate tabular target structure for the task, following these rules:
+- the target structure is a list of tuples
+- each tuple has two parts: the number of dimensions and the list of elements related to these dimensions
+    . if the task is a classification problem, the second part of the tuple is the list of categories
+    . if the task is a regression problem, the second part of the tuple is the empty list
+
+* Example1
+If the task is a binary classification, we know that all classification targets are one-hot-encoded.
+So we have 2 target dimensions and the possible categories are 0 and 1. The target structure is then:
+```python
+TARGET_STRUCT = [
+        (2, [0, 1]),
+    ]
+```
+
+* Example2
+If the task is a regression task, we know that there will be only one target dimension and no categories.
+So the target structure is:
+```python
+TARGET_STRUCT = [
+        (1, []),
+    ]
+```
+
+* Example3
+If the task is a multiclass classification task, we know that the different categories will be one-hot encoded.
+In this example there are 5 different categories so the target structure will be
+```python
+TARGET_STRUCT = [
+        (5, [0, 1, 2, 3, 4]),
+    ]
+```
+
+* Example4
+A more difficult example is if the task is a multiple classification task where the submission format is the probability of each class individually.
+In this case, zero or one or more than 1 classes can be true at the same time.
+In fact, this is a multi-binary classification problem.
+Let's say there are 5 different categories so the target structure will be
+```python
+TARGET_STRUCT = [
+        (2, [0, 1]),
+        (2, [0, 1]),
+        (2, [0, 1]),
+        (2, [0, 1]),
+        (2, [0, 1]),
+    ]
+```
+
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% else -%}
+Now it's your turn, please write the target structure in the same format:
+```python
+TARGET_STRUCT = [
+    (<dimension>, <list>),
+    ...
+]
+```
+{% endif -%}

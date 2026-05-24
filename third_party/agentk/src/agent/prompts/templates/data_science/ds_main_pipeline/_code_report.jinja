@@ -1,0 +1,40 @@
+{%- set code_rag = memory.retrieve({memory.mem_keys.RAG_RETRIEVAL: 1.0}) %}
+
+{%- if code %}
+### Previous code
+This is what you tried in your last attempt:
+```python
+{{ code }}
+```
+{%- if code_output %}
+### Output of previous code
+This was the output when running the code above:
+```python
+{% if code_output|length > 3000 %}
+{{ (code_output)[-3000:] }}
+{% else -%}
+{{ code_output }}
+{%- endif -%}
+```
+{%- endif %}
+{%- endif %}
+
+{%- if code_rag %}
+You may take syntax help from below for coding syntax:
+```python
+{{ code_rag }}
+```
+{%- endif %}
+
+{%- if code_error %}
+### The error in your code was:
+```python
+{% if code_error|length > 3000 %}
+{{ (code_error)[-3000:] }}
+{% else -%}
+{{ code_error }}
+{%- endif -%}
+```
+
+You should fix this error in this attempt.
+{%- endif %}

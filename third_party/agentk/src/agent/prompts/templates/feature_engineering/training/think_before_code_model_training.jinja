@@ -1,0 +1,43 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set training_code = memory.retrieve({memory.mem_keys.CODE_MODEL_TRAINING: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+{% if training_code %}
+## Existing model training code
+Use this model training code with minimal changes required for the new dataset created using feature engineering code.
+```python
+{{ training_code }}
+```
+{% endif %}
+
+## What to do next
+You have to write model training code for the dataset which is already preprocessed.
+
+Set Up the Environment:
+Ensure that all necessary packages are imported.
+
+Model training:
+Select one good model for the data provided and write model training code.
+No need to do any Feature engineering or hyper parameter optimisation to improve performance at this stage. Dataset is already feature engineered, out aim is to see how good is out feature engineered dataset is.
+
+Output:
+Model should work without error and find performance based on the mentioned metric.
+
+Output a plan presented with maximum four bullet points describing the different steps to implement model training.
+The plan should be tailored to the current task as it will be used to implement model training
+
+{% include "code_error_report_think.jinja" %}
+
+Now write the plan, but do **not** write code yet.
+Output a model training plan presented with maximum 4 bullet points.

@@ -1,0 +1,53 @@
+{% set fetched_raw_data = memory.retrieve({memory.mem_keys.FETCHED_RAW_DATA: 1.0}) %}
+{% set raw_task_description = memory.retrieve({memory.mem_keys.RAW_TASK_DESCRIPTION: 1.0}) %}
+{% set raw_table_info = memory.retrieve({memory.mem_keys.RAW_TABLE_INFO: 1.0}) %}
+{% set has_sample_submission = memory.retrieve({memory.mem_keys.HAS_SAMPLE_SUBMISSION: 1.0}) %}
+{% set sample_submission_head = memory.retrieve({memory.mem_keys.SAMPLE_SUBMISSION_HEAD: 1.0}) %}
+{% set raw_id_column_name = memory.retrieve({memory.mem_keys.RAW_ID_COLUMN_NAME: 1.0}) %}
+{% set raw_target_column_names = memory.retrieve({memory.mem_keys.RAW_TARGETS_COLUMN_NAMES: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{% if fetched_raw_data %}
+This is the raw task description from the Kaggle website:
+```
+{{ raw_task_description }}
+```
+
+Here is some information about the tables in the raw data directory:
+```
+{{ raw_table_info }}
+```
+
+{% if has_sample_submission %}
+### View of the sample submission:
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+{% endif -%}
+
+{% if format_err_msg %}
+You had a format error: {{ format_err_msg }}
+{% endif -%}
+
+From the above information, please determine the task type. 
+It can be for example:
+    - regression
+    - binary classification if there are only two classes
+    - multiclass classification if there are more than two classes but only one true class per input
+    - multi-target classification if there are multiple targets to predict for each input - it can be a multi-target binary classification or even a multi-target multiclass classification
+    - classification as a regression: this is a peculiar case where the underlying task is indeed a classification, but it is easier to treat it as a regression task because the given targets are in the form of probabilities for each class instead of the true class labels
+    - bounding box prediction
+    - image segmentation
+    - ...
+Write your reasoning on what the task type should be and for what reasons.
+Then, return the task type as a JSON output following this format:
+
+```json
+{
+    "task_type": "<task_type>",
+}
+```
+{% endif -%}

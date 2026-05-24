@@ -1,0 +1,32 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+You should fix this error next.
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test_fix_error.jinja" -%}
+
+Your response should only be an available command from the list
+Here is a list of the available commands:
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+Command: Terminate
+{% else -%}
+Command: Continue
+{% endif -%}
+Now, choose a command and do not write anything else.

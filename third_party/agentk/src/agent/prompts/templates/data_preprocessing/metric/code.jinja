@@ -1,0 +1,100 @@
+{% set select_metric = stages_code_dict.get("select_metric", dict()) %}
+{% set raw_id_column_name = memory.retrieve({memory.mem_keys.RAW_ID_COLUMN_NAME: 1.0}) %}
+{% set raw_target_column_names = memory.retrieve({memory.mem_keys.RAW_TARGETS_COLUMN_NAMES: 1.0}) %}
+{% set sample_submission_head = memory.retrieve({memory.mem_keys.SAMPLE_SUBMISSION_HEAD: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Task Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TASK_DESCRIPTION: 1.0}) }}
+
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+
+### Submission Format Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_SUBMISSION_FORMAT: 1.0}) }}
+
+### Metric Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_METRIC_DESCRIPTION: 1.0}) }}
+
+Your goal is to write the metric function that takes as inputs the true labels `y_true` and the predicted ones `y_pred`.
+Note that they are in the submission format already.
+If necessary, you might need to drop the id column from `y_true` and `y_pred` in order to perform mathematical operations on the other columns containing the data.
+This is because if the type of the id column is object or string and the rest of the columns have a numerical type, you won't be able to perform operations on the input dataframes unless the columns all have the same type.
+
+### View of the `metric_function()` arguments:
+Both `y_true` and `y_pred` have the same format as the `sample_submission`
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+
+{% if memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) %}
+### These are some of the tables you have asked information about:
+{{ memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) %}
+### These are some tips to avoid common mistakes in the code:
+{{ memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+You should fix this error next.
+{% endif -%}
+{% else -%}
+{% if select_metric and select_metric.get("code", None) %}
+### This was the resulting code after your last attempt:
+{{ stages_code_dict['select_metric']['code'] }}
+{% if stages_code_dict['select_metric']['code_output']|length > 0 %}
+### This was the output:
+```
+{{ stages_code_dict['select_metric']['code_output'] }}
+```
+{% endif -%}
+{% endif -%}
+{% endif -%}
+
+
+{% include "snippets/unit_test_fix_error.jinja" -%}
+
+
+{% if memory.retrieve({memory.mem_keys.RAG_LOCALLY_ACTIVE: 1.0}) and memory.retrieve({memory.mem_keys.METRIC_RAG_EXAMPLES: 1.0}) != None %}
+### Here are examples to help you write the code:
+```python
+{{ memory.retrieve({memory.mem_keys.METRIC_RAG_EXAMPLES: 1.0}) }}
+```
+{% endif -%}
+
+
+{% set metric_code_template = memory.retrieve({memory.mem_keys.CODE_TEMPLATES: 1.0})["metric"] %}
+Write the code in order to create this function as in this example:
+```python
+{% include metric_code_template %}
+```
+Do not change the function name, do not change the function signature, include all the necessary imports you need.
+
+{% if memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) != None %}
+### Plan:
+{{ memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) }}
+{% endif -%}
+
+Your response should be the full function definition (with adequate imports) in the format:
+```python
+code
+```

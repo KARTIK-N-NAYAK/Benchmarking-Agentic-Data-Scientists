@@ -1,0 +1,20 @@
+{% extends "snippets/group_unit_test.jinja" %}
+{%- set unit_test_rag_example = memory.retrieve({memory.mem_keys.UNIT_TEST_RAG_EXAMPLES: 1.0}) -%}
+{% block group_unit_test_error_instruction %}
+You should fix this error next.
+{%- if memory.retrieve({memory.mem_keys.RAG_LOCALLY_ACTIVE: 1.0}) and unit_test_rag_example %}
+
+### An example of a similar error being fixed:
+Failing code:
+{{ unit_test_rag_example.code }}
+
+Failing code error:
+```
+{{ unit_test_rag_example.code_error }}
+```
+
+Fixed code:
+{{ unit_test_rag_example.code_fixed }}
+{% endif %}
+
+{% endblock %}

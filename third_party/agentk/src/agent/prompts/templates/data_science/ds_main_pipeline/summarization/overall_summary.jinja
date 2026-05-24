@@ -1,0 +1,16 @@
+{% include "system_prompt.jinja" %}
+{%- set submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+
+[[ USER ]]
+
+{{ submission.submission_state.to_str() }}
+
+Please summarize the above steps into a single final summary. The output should be in the format:
+```json
+    {
+        "summary": "<overall_summary>"
+    }
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

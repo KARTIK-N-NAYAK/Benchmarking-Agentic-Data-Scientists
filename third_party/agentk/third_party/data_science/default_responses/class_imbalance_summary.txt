@@ -1,0 +1,7 @@
+<ANS>
+```json
+{
+    "summary": "Calculate and normalize class weights based on the frequency of each class in the training dataset, and assign these weights to each training sample to address class imbalance."
+}
+```
+</ANS>

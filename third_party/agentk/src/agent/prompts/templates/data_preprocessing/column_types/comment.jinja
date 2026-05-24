@@ -1,0 +1,49 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Task Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TASK_DESCRIPTION: 1.0}) }}
+
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+{{ memory.retrieve({memory.mem_keys.TAB_TRAIN_COLUMNS: 1.0}) }}
+{{ memory.retrieve({memory.mem_keys.TAB_TRAIN_INFO: 1.0}) }}
+
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+{% endif -%}
+
+{% include "snippets/unit_test.jinja" -%}
+
+{# We only call the LLM with this prompt if the code has passed #}
+### These are the column types you have created.
+{{ memory.retrieve({memory.mem_keys.VALID_COLUMN_TYPES: 1.0}) }}
+
+Now write a comment on these column types.
+In particular, decide if they are satisfactory with respect to the task or if you think they need to be changed and why.
+This comment will then be used to regenerate the column types code, so write anything you think want to be reflected in the code.
+For instance, are there any columns with dates or timestamps in the data?
+If there are such columns, their column types should have 'Datetime' dtypes, and so on.
+Focus on small changes and e.g. columns that are actually categorical but identified as numerical.
+A column that is maybe a category but identified as text is nothing to worry about.
+
+Write a short comment.
+
+Give your response in the following JSON format:
+```json
+{
+    "comment": "<comments>",
+}
+```

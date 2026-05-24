@@ -1,0 +1,53 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set submission_summary = memory.retrieve({memory.mem_keys.SUBMISSION_SUMMARY: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+EDA: {{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+{% include "./ds_main_pipeline/to_do_next_templates/tab_head_todo.jinja" %}
+
+{% include "./ds_main_pipeline/code_error_report_for_code.jinja" %}
+
+Use your plans to help you implement the pytorch tabular decode model and losses:
+{{ plan }}
+
+Write the code to create a decoder model taking embeddings as input, and outputing predictions (logits for classification).
+1. You should implement a class TabularHead inheriting form torch.nn.Module.
+2. You must not forget to import the packages when needed.
+3. The model should be able to take as input a torch tensor of size `(batch, embed_dim)` and output a tensor of shape `(batch, output_dim)`.
+4. Consider BatchNormalization, Dropout, Skip connection etc if required.
+
+Your task is to fill the blank and implement the feature engineering in this code:
+```python
+{% include templates_relative_path + "/tab_head_code_template.jinja" %}
+```
+
+Only output the code that should be filled in the blank with no extra text. Don't forget to import any additional packages that you will use in the code.
+Your response should be in the format:
+```python
+<code>
+```

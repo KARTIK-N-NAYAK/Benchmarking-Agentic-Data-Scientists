@@ -1,0 +1,21 @@
+{%- set submission_list = memory.retrieve({memory.mem_keys.SUBMISSION_LIST: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+This is the list of the solutions that have already been generated:
+{% for submission in submission_list %}
+* {{ submission.name }}: {{ submission.submission_state.summary }}
+{% endfor %}
+
+Please select one submission only from the above list in order to submit.
+Please return only the submission id in the following JSON format
+```json
+{
+    "submission": "<submission_choice>"
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

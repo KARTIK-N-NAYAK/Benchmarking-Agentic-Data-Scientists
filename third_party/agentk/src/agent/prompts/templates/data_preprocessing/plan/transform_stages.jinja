@@ -1,0 +1,33 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Task Description
+This is the summary of the task description that you wrote previously:
+{{ task_description }}
+
+### Target modalities
+This is the summary of the required target modalities that you wrote previously:
+{{ target_modalities }}
+
+### Submission Format
+This is the summary of the submission format that you wrote previously:
+{{ submission_format }}
+
+Based on the above information, write a JSON object with the three keys deciding if each modality is needed as target.
+- "tabular_targets_transform_needed" is True if the task is some type of classification.
+- "image_targets_transform_needed" is False.
+- "text_targets_transform_needed" is  False.
+
+Please fill and return the following JSON object, respecting its format:
+```json
+{
+    "tabular_targets_transform_needed": <True/False>,
+    "image_targets_transform_needed": <True/False>,
+    "text_targets_transform_needed": <True/False>,
+}
+```
+The values can only be the python boolean elements: True or False.
+Not "True", not true, not "true".
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

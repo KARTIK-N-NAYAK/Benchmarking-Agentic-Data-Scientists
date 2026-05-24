@@ -1,0 +1,90 @@
+{% set create_column_types = stages_code_dict.get("create_column_types", dict()) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Task Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TASK_DESCRIPTION: 1.0}) }}
+
+### Data Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) }}
+{{ memory.retrieve({memory.mem_keys.TAB_TRAIN_COLUMNS: 1.0}) }}
+{{ memory.retrieve({memory.mem_keys.TAB_TRAIN_INFO: 1.0}) }}
+
+Your goal is to write the column_types function that reads your prepared dataset and writes down all column types as a json.
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+You should fix this error next.
+{% endif -%}
+{% elif create_column_types and create_column_types.get("code", None) -%}
+### This was the resulting code after your last attempt:
+{{ create_column_types["code"] }}
+{% if create_column_types['code_output']|length > 0 %}
+### This was the output:
+```
+{{ create_column_types['code_output'] }}
+```
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test_fix_error.jinja" -%}
+
+{% set column_types_code_template = memory.retrieve({memory.mem_keys.CODE_TEMPLATES: 1.0})["column_types"] %}
+Please complete the following code in order to create this function:
+```python
+{% include column_types_code_template %}
+```
+
+This is an example of how you can fill the code above:
+```python
+def column_types(input_df: pd.DataFrame) -> dict[str, Any]:
+    num_cols = input_df.select_dtypes(include=np.number).columns
+    datetime_types = ["datetime", "datetime64", "datetime64[ns]", "datetimetz"]
+    datetime_cols = input_df.select_dtypes(include=datetime_types).columns
+    column_type_dict = defaultdict()
+    for col in input_df.columns:
+        if col in num_cols:
+            column_type_dict[col] = "numerical"
+        elif col in datetime_cols:
+            column_type_dict[col] = "datetime"
+        elif input_df[col].dtype == 'object':
+            if <condition1>:
+                column_type_dict[col] = "categorical"
+            else:
+                column_type_dict[col] = "<other_type>"
+    return column_type_dict
+```
+While writing the function, remember to follow the rules:
+1. The code should account for all the data knowledge you know about categorical, boolean or numerical columns.
+2. There should be no errors.
+3. The output should be a dictionary containing all input columns and the type of data in each column.
+4. Special columns such as a DateTime column may have 'object' type, so you have to explicitly mention those columns to have 'DateTime' dtype.
+5. Note that we prefer the type "text" rather than "string"
+6. Feel free to modify the code inside the function following the above points but do not modify the signature or the type of the returned object.
+
+{% if memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) != None %}
+### Plan:
+{{ memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) }}
+{% endif -%}
+
+Your response should **only** be the code to complete the above template, in the format:
+```python
+code
+```
+No need to write any other part than the function.
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

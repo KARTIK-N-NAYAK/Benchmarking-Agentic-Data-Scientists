@@ -1,0 +1,31 @@
+[[ SYSTEM ]]
+You are a professional data scientist and a python expert. You are given with data frame. You have correctly identify the column types and generate a dictionary.
+
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+You should fix this error next.
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+
+To decide what to do now, explain what you want to do next and then select one (and only one) of the following available actions:
+
+Here is a list of the available commands:
+* "action": "Terminate"
+{% else -%}
+Here is a list of the available commands:
+* "action": "Continue"
+{% endif -%}
+Now, choose a command now and please do not write anything else.

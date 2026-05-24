@@ -1,0 +1,7 @@
+_target_: agent.models.openai_api.OpenAIAPILanguageBackend
+_partial_: true
+client:
+  _target_: huggingface_hub.InferenceClient
+  base_url: https://api.deepseek.com
+  api_key: ${oc.env:DEEPSEEK_API_KEY}
+max_tokens: 3000

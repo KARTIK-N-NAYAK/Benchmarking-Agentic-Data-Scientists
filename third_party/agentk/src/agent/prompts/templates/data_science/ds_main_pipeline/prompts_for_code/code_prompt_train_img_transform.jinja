@@ -1,0 +1,78 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set submission_summary = memory.retrieve({memory.mem_keys.SUBMISSION_SUMMARY: 1.0}) %}
+{%- set img_data_statistics = memory.retrieve({memory.mem_keys.IMG_DATA_STATISTICS: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+EDA: {{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+You have to generate a code to transform the images using a composition of torchvision transforms.
+You need to write a pytorch torchvision.transforms.Compose sequence that transforms the images appropriately with respect to the task.
+You need to make sure the images are also transformed to torch.Tensor at some point as the images will be fed to a vision neural network.
+You can use any image transforms (Resize, RandomCrop, ToTensor, ...) or even write custom transforms with Lambda() ...
+The main argument of Resize can be a tuple of image dimensions which will distort the original aspect ratio to match that shape. It can alternatively be a single number to resize only the smallest dimension to, preserving the aspect ratio but providing no guarantees about the output shape.
+If using any normalization, only do so at the end after having transformed, resized and dealt with channels. If using any resizing or cropping, only do so before other transforms.
+{%- if img_data_statistics != None %}
+Note that the statistics for this dataset are the following (in case you need them):
+{%- for key, value in img_data_statistics.items() %}
+  * the {{ key }} is: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+Implement the CustomTrainImageInputTransform as a `torchvision.transforms.Compose` function, i.e.
+```python
+from torchvision.transforms import v2
+CustomTrainImageInputTransform = v2.Compose([
+    ...
+])
+```
+
+{% include "./ds_main_pipeline/code_error_report_for_code.jinja" %}
+
+Use your plans to help you implement the image transform:
+{{ plan }}
+
+Write the code to create an image transforms composition.
+1. You must fill all the required parameters of the transforms you are using in a sensible way with respect to the image shapes of the current task.
+2. You must not forget to import the packages when needed.
+3. The transforms should be transforming the images to tensor at the appropriate step.
+{%- if submission_summary %}
+4. Try to use different transforms than this last attempt: {{ submission_summary }}. Do not repeat all the transforms from the attempt.
+{%- endif %}
+
+Your task is to fill the blank and implement the image transform in this code:
+```python
+{% include templates_relative_path + "/train_img_transform_code_template.jinja" %}
+```
+
+This means your answer must be **only the code to replace the fill-in-the-middle token**: {{ memory.retrieve({memory.mem_keys.FIM_TOKENS: 1.0})['fim_hole_token'] }}
+
+Only output the code that should be filled in the blank with no extra text, i.e. only the implementation of the `CustomTrainImageInputTransform`, as a `torchvision.transforms.Compose` function
+Don't forget to import any additional packages that you will use in the code.
+Your response should be in the format:
+```python
+<code>
+```

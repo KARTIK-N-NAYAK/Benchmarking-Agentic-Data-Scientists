@@ -1,0 +1,18 @@
+defaults:
+  - openai
+
+# # Override the base HF client – use our own OpenAI() client in code
+# llm:
+#   client: null
+
+# OpenAI model id
+model_id: gpt-4o-mini
+
+# Conservative context length for safety
+context_length: 16384
+
+# Optional sampling settings
+temperature: 0.2
+max_tokens: 512
+
+tokenizer_kwargs: {}

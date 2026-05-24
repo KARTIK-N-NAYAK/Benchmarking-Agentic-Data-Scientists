@@ -1,0 +1,57 @@
+{%- set summarized_data_description = memory.retrieve({memory.mem_keys.SUMMARIZED_DATA_DESCRIPTION: 1.0}) %}
+{%- set summarized_inputs_modality_maps = memory.retrieve({memory.mem_keys.SUMMARIZED_INPUTS_MODALITY_MAPS: 1.0}) %}
+{%- set code_ran = memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+{%- set code_passed = memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set error_instructions = memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Data Description
+{{ summarized_data_description }}
+
+### Modalities Description
+{{ summarized_inputs_modality_maps }}
+
+{% if code_ran %}
+### This was the resulting code after your last attempt:
+{{ code }}
+{% if code_passed %}
+{% if code_output|length > 0 %}
+### This was the output:
+```
+{{ code_output }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ code_error }}
+```
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test.jinja" -%}
+{% include "snippets/group_unit_test.jinja" -%}
+
+{% if error_instructions %}
+### The previous instructions you already wrote:
+{{ error_instructions }}
+
+Do not write or rephrase the same instructions multiple times.
+{% endif %}
+
+Based on the information create an instruction that will help avoid this error in the future.
+In particular, summarize the error and explain briefly why it happened.
+Then, write a **short** explanation describing how to avoid that error in the future.
+Finally, write an instruction in a JSON format to allow a future user from avoiding that error:
+```json
+{
+    "instruction": "<instruction>",
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

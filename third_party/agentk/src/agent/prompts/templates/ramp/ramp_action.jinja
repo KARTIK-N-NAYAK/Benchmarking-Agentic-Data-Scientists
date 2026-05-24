@@ -1,0 +1,23 @@
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+{{memory.retrieve({memory.mem_keys.OBSERVATION: 1.0})}}
+
+This is the list of actions that are available right now:
+{% for action in available_actions %}
+* {{ action }}
+{% endfor %}
+
+Please select the best action for getting best prediction results.
+Please return only the action name in the following JSON format
+```json
+{
+    "action": "<action_choice>"
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

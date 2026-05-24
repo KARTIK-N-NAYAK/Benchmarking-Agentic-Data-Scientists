@@ -1,0 +1,255 @@
+# @package _global_
+ds_commands_path: &ds_commands_path "agent.commands.ds_custom_commands"
+FixedAct: &FixedAct ${ds_commands_path}.FixedAct
+
+
+
+agent:
+  on_episode_start_flow:
+    _target_: ${ds_commands_path}.SequentialFlow
+    name: pre_episode_start_db
+    description: Pre-episode flow that starts the RAG DB
+    sequence:
+      - _target_: ds_agent.rag.commands.StartRAGDB
+        db_path: ${task.db_faiss_path}
+        db_embedded_field: ${task.db_embedding_field}
+        db_embedding_model_name: ${task.embedding_model_name}
+        disabled: true
+
+  pre_action_flow:
+    _target_: agent.commands.DecisionFlow
+    prompt_template: "top_level/top_level_decision.jinja"  # should decide what action to take (create model, FE, HPO,...)
+    max_retries: 5
+    parse_func_id: extract_action_as_json
+    max_tokens: 500
+    memory_choice_tag_val: _available_actions
+    choices:
+      # ---------------------------------------------------------------------- #
+      #   Choose between RAMP OR CLASSICAL
+      # ---------------------------------------------------------------------- #
+      - _target_: ${ds_commands_path}.AdoptDNNFramework
+
+
+      - _target_: ${ds_commands_path}.AddSubmissionAct
+
+      # ---------------------------------------------------------------------- #
+      #   Add a Classical ML submission
+      # ---------------------------------------------------------------------- #
+      - _target_: ${ds_commands_path}.AdoptClassicalMLAct
+
+      - _target_: ${ds_commands_path}.AddClassicalSubmissionAct
+
+      # ------- Classical Tabular FE ------------ #
+      - _target_: ${ds_commands_path}.ThinkAndCodeClassicalTabFE
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_classical_tab_fe.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_classical_tab_fe.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_classical_tab_fe.jinja"
+        code_with_blanks: ${task.workspace_path}/classical_tab_fe_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/classical_tab_fe_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+
+      - _target_: *FixedAct
+        name: "Add a predictive model"
+        description: "TODO"
+
+      - _target_: *FixedAct
+        name: "Suggest hyperparameters"
+        description: "TODO"
+
+      - _target_: *FixedAct
+        name: "Train the model"
+        description: "TODO"
+
+      # ---------------------------------------------------------------------- #
+      #   Add a DNN-based submission
+      # ---------------------------------------------------------------------- #
+      - _target_: ${ds_commands_path}.AddDNNSubmissionAct
+
+      - _target_: ${ds_commands_path}.TabEmbedAct
+
+      # ------- CLASS IMABALANCE ------------ #
+      - _target_: ${ds_commands_path}.ThinkAndCodeClassImbalance  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_class_imbalance.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_class_imbalance.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_class_imbalance.jinja"
+        code_with_blanks: ${task.workspace_path}/class_imbalance_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/class_imbalance_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+        default_plan_path: "./third_party/data_science/default_responses/class_imbalance_plan.txt"
+        default_code_path: "./third_party/data_science/default_responses/class_imbalance_code.txt"
+        default_summary_path: "./third_party/data_science/default_responses/class_imbalance_summary.txt"
+
+      # ------- DNN Tabular FE ------------ #
+      - _target_: ${ds_commands_path}.MultiTrialThinkAndCodeDNNTabFE
+        think_and_code_flow:
+          _target_: ${ds_commands_path}.ThinkAndCodeDNNTabFE
+          workspace_path: ${task.workspace_path}/
+          flow_loop_template: "ds_main_pipeline/loop_code/loop_tab_fe.jinja"
+          choice_parse_func_id: extract_action_as_json
+          rag_for_think_template: null
+          think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_tab_fe.jinja"
+          rag_for_code_template: null
+          code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_tab_fe.jinja"
+          code_with_blanks: ${task.workspace_path}/tab_fe_code_template.py
+          summary_ask_template: "ds_main_pipeline/summarization/tab_fe_summary.jinja"
+          summary_parse_func_id: extract_summary_as_json
+          human_takeover_step: 40
+      # ------------------------------- #
+
+      # ------- DNN Tabular embedder ------ #
+      - _target_: ${ds_commands_path}.ThinkAndCodeTabPreprocessedEmbed  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_tab_preprocessed_embed.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_tab_preprocessed_embed.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_tab_preprocessed_embed.jinja"
+        code_with_blanks: ${task.workspace_path}/tab_preprocessed_embed_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/tab_preprocessed_embed_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+      # ------------------------------- #
+
+      # ------- Text embedder ------ #
+      - _target_: ${ds_commands_path}.ThinkAndCodeTextEmbed  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_txt_embed.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_txt_embed.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_txt_embed.jinja"
+        code_with_blanks: ${task.workspace_path}/txt_embed_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/txt_embed_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+      # ------------------------------- #
+
+      # ------- Image embedder ------ #
+      - _target_: ${ds_commands_path}.ImgEmbedAct
+
+      - _target_: ${ds_commands_path}.ThinkAndCodeTrainImgTransform  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_train_img_transform.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_train_img_transform.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_train_img_transform.jinja"
+        code_with_blanks: ${task.workspace_path}/train_img_transform_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/train_img_transform_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+        default_plan_path: "./third_party/data_science/default_responses/train_img_transform_plan.txt"
+        default_code_path: "./third_party/data_science/default_responses/train_img_transform_code.txt"
+        default_summary_path: "./third_party/data_science/default_responses/train_img_transform_summary.txt"
+
+      - _target_: ${ds_commands_path}.ThinkAndCodeTestImgTransform  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_test_img_transform.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_test_img_transform.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_test_img_transform.jinja"
+        code_with_blanks: ${task.workspace_path}/test_img_transform_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/test_img_transform_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+        default_plan_path: "./third_party/data_science/default_responses/test_img_transform_plan.txt"
+        default_code_path: "./third_party/data_science/default_responses/test_img_transform_code.txt"
+        default_summary_path: "./third_party/data_science/default_responses/test_img_transform_summary.txt"
+
+      - _target_: ${ds_commands_path}.ThinkAndCodeImgModelling  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_img_embed.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_img_embed.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_img_embed.jinja"
+        code_with_blanks: ${task.workspace_path}/img_embed_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/img_embed_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+      # ------------------------------- #
+
+      - _target_: *FixedAct
+        name: "Implement text model head"
+        description: "TODO"
+
+      # -------- Tabular regression target transform --------- #
+      - _target_: ${ds_commands_path}.ThinkAndCodeTabRegressionTargetTransform  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_tab_regression_target_scaler.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_tab_regression_target_scaler.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_tab_regression_target_scaler.jinja"
+        code_with_blanks: ${task.workspace_path}/tab_regression_target_scaler_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/tab_regression_target_scaler_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+        default_plan_path: "./third_party/data_science/default_responses/tab_regression_target_transform_plan.txt"
+        default_code_path: "./third_party/data_science/default_responses/tab_regression_target_transform_code.txt"
+        default_summary_path: "./third_party/data_science/default_responses/tab_regression_target_transform_summary.txt"
+      # ------------------------------- #
+
+      # -------- Tabular head --------- #
+      - _target_: ${ds_commands_path}.ThinkAndCodeTabHead  #
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_tab_head.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_tab_head.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_tab_head.jinja"
+        code_with_blanks: ${task.workspace_path}/tab_head_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/tab_head_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+      # ------------------------------- #
+
+      - _target_: *FixedAct
+        name: "Implement image model head"
+        description: "TODO"
+
+      - _target_: ${ds_commands_path}.AddTrainCode
+
+      - _target_: ${ds_commands_path}.TrainSubmissionCode
+        overall_summary_template: "ds_main_pipeline/summarization/overall_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+
+      - _target_: *FixedAct
+        name: "Add hyperparameters"
+        description: "TODO"
+
+      - _target_: ${ds_commands_path}.SendBagSubmissions
+        parse_func_id: "extract_submission_as_json"
+        select_submission_template: "ds_main_pipeline/send_submission/select_submission_bag.jinja"
+        workspace_path: ${task.workspace_path}/
+        flow_loop_template: "ds_main_pipeline/loop_code/loop_bag.jinja"
+        choice_parse_func_id: extract_action_as_json
+        rag_for_think_template: null
+        think_prompt_template: "ds_main_pipeline/think_for_code/think_before_code_bag.jinja"
+        rag_for_code_template: null
+        code_prompt_template: "ds_main_pipeline/prompts_for_code/code_prompt_bag.jinja"
+        code_with_blanks: ${task.workspace_path}/bag_code_template.py
+        summary_ask_template: "ds_main_pipeline/summarization/bag_summary.jinja"
+        summary_parse_func_id: extract_summary_as_json
+
+      - _target_: ${ds_commands_path}.SendBlendSubmissions
+        parse_func_id: "extract_submission_as_json"
+        select_submission_template: "ds_main_pipeline/send_submission/select_submission_blend.jinja"
+
+      - _target_: ${ds_commands_path}.SendSubmission
+        parse_func_id: "extract_submission_as_json"
+        select_submission_template: "ds_main_pipeline/send_submission/select_submission.jinja"
+
+  prompt_builder:
+    template_paths: [ "data_science/" ]
+    default_kwargs:
+      cot_type: zero_shot

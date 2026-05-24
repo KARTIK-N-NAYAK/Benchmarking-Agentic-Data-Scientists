@@ -1,0 +1,21 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+## Plan
+This is the plan you wrote to create the map for the test text inputs:
+{{ memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) }}
+
+## Code
+This was the resulting code after your last attempt to create the map for the test text inputs:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% else -%}
+Now please write a one-liner summary of that in a JSON format
+```json
+{
+    "summary": "<summary>"
+}
+```
+{% endif -%}

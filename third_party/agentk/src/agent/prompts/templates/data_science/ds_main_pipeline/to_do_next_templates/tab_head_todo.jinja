@@ -1,0 +1,5 @@
+At this stage, the program you have allows to embed each input into a 1D tensor.
+You need to write a trainable pytorch model that can decode a batch of embedding to predict the tabular targets of this the datascience task.
+The model shall output for each embedding a single 1D tensor and you can consider that it will be automatically split to match the expected target dimensions (number of regression targets + number of classes for each classification target).
+Note that for classification targets, the model should output logits (so no Softmax activation is needed).
+Additionally to the decoder model, you also have to implement two loss functions. One for the regression targets, and one for the classification targets (that will take predicted logits as input and the one-hot encoded target). Again, you do not need to take care of splitting the output into different segments for regression and classification, it will be done automatically.

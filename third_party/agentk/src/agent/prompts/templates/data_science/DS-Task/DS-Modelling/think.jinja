@@ -1,0 +1,41 @@
+{% include "system_prompt.jinja" %}
+[[ USER ]]
+{%- set obs = memory.retrieve({memory.mem_keys.OBSERVATION: 1.0}) %}
+{{obs}}
+
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- if code %}
+Here is your code in the last step:
+```python
+{{code}}
+```
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+
+{%- if code_error == "" %}
+The code runs successfully, and here is the code output: {{memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})}}
+
+Create a plan to edit the following code to improve model performance.
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+```python
+{% include templates_relative_path + "/train_template.jinja" %}
+```
+
+{%- else %}
+The code has bugs, and here is the error message: {{code_error}}
+Please analyze why this error happens and how to modify the code to make it work.
+{%- endif %}
+
+{%- else %}
+Create a plan to add a good model to the code. Don't plan other parts of data science, and only focussing on model creation.
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+```python
+{% include templates_relative_path + "/train_template.jinja" %}
+```
+{%- endif %}
+Only give a plan, without any code.
+Your plan should focus on what latest modelling techniques can be implemented. DO NOT focus on model evaluation or feature engineering.
+Do not try hyperparameter search to improve model performance, rather try better more advanced models.
+Else, try to use more complex models that can help you achieve higher performance!
+If there was an error in the code, your plan should choose how to fix that error.
+Provide this plan in the format:
+Thought: ...

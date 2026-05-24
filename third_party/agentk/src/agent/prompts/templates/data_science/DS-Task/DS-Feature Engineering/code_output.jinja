@@ -1,0 +1,61 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{{memory.retrieve({memory.mem_keys.OBSERVATION: 1.0})}}
+Information about the data:
+{{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+{{memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0})}}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- if code %}
+This is what you tried in your last attempt:
+```python
+{{memory.retrieve({memory.mem_keys.CODE: 1.0})}}
+```
+{%- if code_output %}
+This was performance of the Feature Engineering on a simple model:
+{%- if code_output|length > 600 %}
+{{ (code_output)[-600:] }}
+{% else %}
+{{memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})}}
+{% endif %}
+{% endif %}
+
+{% if memory.retrieve({memory.mem_keys.FE_RAG: 1.0})=="" %}
+{% else %}
+You may take syntax help from below for coding syntax:
+```python
+{{memory.retrieve({memory.mem_keys.FE_RAG: 1.0})}}
+```
+{% endif %}
+
+{%- if code_error == "" %}
+{% else %}
+### The error in your code was: {{code_error}}
+You should fix this error in this attempt.
+{%- endif %}
+{%- endif %}
+
+Use your plans to help you engineer the features:
+{{memory.retrieve({memory.mem_keys.THOUGHT: 1.0})}}
+
+Write the function code to prepare the data for a successful predictive model using the information given above.
+1. Label encode the categorical variables, normalise the data if necessary, create new features based on the old ones if required.
+2. The function should take a DataFrame as input, and the transformed DataFrame as output.
+3. Do not forget to handle the missing values.
+4. Feel free to import the necessary libraries inside the function required for FE.
+5. DO NOT include the target_column in feature engineering. No FE will be performed on the target column.
+
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+Your task is to write additional feature engineering code in the transform method of this code:
+```python
+{% include templates_relative_path + "/fe_template.jinja" %}
+```
+
+You should only write the code to add inside the 'transform' method to effectively feature engineer this data for best model results.
+Remember, this dataframe is already label encoded and imputed for missing values. You must perform further transformations to prepare it for modelling.
+Only give FULL code with no extra text. Don't forget to import any additional packages that you will use for FE. Your response should be in the format:
+```python
+<code>
+```

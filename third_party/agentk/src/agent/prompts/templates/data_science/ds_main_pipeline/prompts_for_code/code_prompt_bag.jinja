@@ -1,0 +1,64 @@
+
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+{%- set submission_list = memory.retrieve({memory.mem_keys.SUBMISSION_LIST: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+EDA: {{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+This is the list of the solutions that have already been generated:
+{% for submission in submission_list %}
+* {{ submission.name }}: {{ submission.submission_state.summary }}
+{% endfor %}
+
+## What to do next
+Your task is to write a bagging function, such as the following, which bags the above submissions and returns a final submission.
+You can write this function for more than 2 submissions based on how many submissions you have available as well.
+
+```python
+import pandas as pd
+import numpy as np
+
+def bag(**kwargs):
+    '''
+    This function takes multiple number of pd.DataFrame as inputs, parses through them, to output one bagged solution.
+    '''
+    #Define a dataframe, and add all previous predictions to it
+    df = pd.DataFrame()
+    df['sub1'] = key1['target']
+    df['sub2'] = key2['target']
+    mostCommonVote=[]
+    #Iterate over the past predictions to find the most common vote
+    for row in df[['sub1','sub2']].values:
+        votes, values = np.unique(row, return_counts=True)
+        if np.all(values<=1):
+                mostCommonVote.append( row[0] )
+        else:
+            mostCommonVote.append( votes[np.argmax(values)] )
+    #Set the most common vote as 'final_pred' and return the df
+    df['final_pred'] = mostCommonVote
+    return df
+```
+
+You can also bag on a mean function, or other such methods.
+Only output the the function to bag submissions with no extra text. Remember that the function must input a Don't forget to import any additional packages that you will use in the code.
+Your response should be in the format:
+```python
+<code>
+```

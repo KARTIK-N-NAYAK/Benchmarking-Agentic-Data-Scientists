@@ -1,0 +1,89 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set submission_summary = memory.retrieve({memory.mem_keys.SUBMISSION_SUMMARY: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+EDA: {{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+You have to generate a code to embed the images using a pre-trained torchvision model.
+You need to write a pytorch torchvision model, where forward() takes the tensor transformed images as input, and that outputs a latent representation as a tensor.
+You can use any pre-trained models like resnet18, resnet50, resnet101, SqueezeNet, AlexNet, EfficientNetV2, GoogLeNet, MaxVit, MNASNet, RegNet, vit etc...
+Keep in mind that scaling parameters and data is important: if the dataset size is low, it's best to use a smaller model and reciprocally if the dataset is big, a bigger model is suitable.
+
+Ensure to unfreeze last few layers of the model based on the model you choose.
+
+An example of this model code is:
+```python
+import torch
+import torchvision.models as models
+from torch import nn
+
+class ImageEmbedder(nn.Module):
+    def __init__(self, pretrained=True):
+        super().__init__()
+        
+        resnet50 = models.resnet50(pretrained=pretrained)
+        self.features = nn.ModuleList(resnet50.children())[:-1]
+        self.features = nn.Sequential(*self.features)
+        # optionally freeze pre-trained model weights
+        for param in self.features.parameters():
+            param.requires_grad = False
+
+    def forward(self, x):
+        output = self.features(x)
+        output = output.view(x.size(0), -1)
+        return output
+
+    def unfreeze(self, n_last_layers=2):
+        """Unfreeze some layers for fine-tuning."""
+        for layer in self.features[-n_last_layers:]:
+            for param in layer.parameters():
+                param.requires_grad = True
+```
+
+{% include "./ds_main_pipeline/code_error_report_for_code.jinja" %}
+
+Use your plans to help you implement the pytorch embedder model:
+{{ plan }}
+
+Write the code to create a model taking tensors of preprocessed features as input, and outputting an embedding tensor.
+1. You can assume that the input dimension is already computed in the variable `input_dim`.
+2. You must not forget to import the packages when needed.
+3. The model should be able to take as input a torch tensor of size `(batch, input_dim)` and output a tensor of shape `(batch, latent_dim)`.
+{%- if submission_summary %}
+4. Try to use newer models than this last attempt: {{ submission_summary }}. Do not repeat these pre-trained models from the attempt.
+{%- endif %}
+
+Your task is to fill the blank and implement the image embedder in this code:
+```python
+{% include templates_relative_path + "/img_embed_code_template.jinja" %}
+```
+
+Only output the code that should be filled in the blank with no extra text. Don't forget to import any additional packages that you will use in the code.
+Your response should be in the format:
+```python
+<code>
+```

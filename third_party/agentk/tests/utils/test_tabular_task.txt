@@ -1,0 +1,624 @@
+<ANS>
+**Task Summary:**
+
+- **Main Goal:** Predict whether an individual's annual income is greater than $50K (high_income) or $50K or below (low_income) based on their attributes.
+- **Task Type:** Binary classification on tabular data.
+</ANS>
+
+<ANS>
+### Data Organization Summary
+
+#### Directory Structure
+```
+./custom_task_test/
+|
++-- test.csv
++-- train.csv
++-- sample_submission.csv
+```
+
+#### File Descriptions
+
+1. **train.csv**
+   - **Path**: `./custom_task_test/train.csv`
+   - **Content**:
+     - **Columns**:
+       - `id`: Unique identifier (int64)
+       - `age`: Age of the individual (int64)
+       - `education_level`: Educational level (object) - Possible values: ['bachelor', 'phd', 'high_school', 'master']
+       - `occupation_type`: Occupation type (object) - Possible values: ['blue_collar', 'admin', 'tech', 'manager', 'sales']
+       - `hours_per_week`: Hours worked per week (int64)
+       - `label`: Income class (object) - Possible values: ['low_income', 'high_income']
+   - **Rows**: 20 entries
+   - **Memory Usage**: 1.1+ KB
+
+2. **test.csv**
+   - **Path**: `./custom_task_test/test.csv`
+   - **Content**:
+     - **Columns**:
+       - `id`: Unique identifier (int64)
+       - `age`: Age of the individual (int64)
+       - `education_level`: Educational level (object) - Possible values: ['bachelor', 'phd', 'high_school', 'master']
+       - `occupation_type`: Occupation type (object) - Possible values: ['blue_collar', 'admin', 'tech', 'manager', 'sales']
+       - `hours_per_week`: Hours worked per week (int64)
+       - `label`: Income class (object) - Possible values: ['low_income', 'high_income']
+   - **Rows**: 20 entries
+   - **Memory Usage**: 1.1+ KB
+
+3. **sample_submission.csv**
+   - **Path**: `./custom_task_test/sample_submission.csv`
+   - **Content**:
+     - **Columns**:
+       - `id`: Unique identifier (int64)
+       - `label`: Predicted income class (float64) - Initially filled with NaN
+   - **Rows**: 20 entries
+   - **Memory Usage**: 452.0 bytes
+
+### Feature and Target Names
+
+- **Feature Columns**:
+  - `age` (int64)
+  - `education_level` (object)
+  - `occupation_type` (object)
+  - `hours_per_week` (int64)
+
+- **Target Column**:
+  - `label` (object) - Possible values: ['low_income', 'high_income']
+
+### Important Notes
+- The data is located at the absolute path `./custom_task_test`.
+- The file names and paths must remain unchanged.
+- The `label` column in `sample_submission.csv` should be populated with the predicted income class ('low_income' or 'high_income') for the corresponding `id`.
+</ANS>
+
+<ANS>
+### Metric Description: Accuracy
+
+**Accuracy** is a classification metric used to measure the proportion of correctly classified instances out of the total instances. It is defined as:
+
+\[
+\text{Accuracy} = \frac{\text{Number of Correct Predictions}}{\text{Total Number of Predictions}}
+\]
+
+#### Computation Steps:
+1. **Count Correct Predictions**: For each instance in the test dataset, compare the predicted label with the actual label. If they match, count it as a correct prediction.
+2. **Count Total Predictions**: Determine the total number of instances in the test dataset.
+3. **Calculate Accuracy**: Divide the number of correct predictions by the total number of predictions.
+
+#### Example:
+- Suppose you have a test dataset with 100 instances.
+- Your model correctly predicts the labels for 85 of these instances.
+- The accuracy would be calculated as:
+
+\[
+\text{Accuracy} = \frac{85}{100} = 0.85 \text{ or } 85\%
+\]
+
+This metric provides a straightforward way to evaluate the performance of a classification model, especially when the classes are balanced. However, it may not be the best metric in cases with imbalanced classes, where other metrics like precision, recall, or F1 score might be more appropriate.
+</ANS>
+
+<ANS>
+### Submission Format Summary
+
+- **Input ID Column Name:** `id`
+- **Target Column Name:** `label`
+- **Type of Targets:** Categorical
+- **Allowed Values for Targets:**
+  - `high_income` (for annual income greater than $50K)
+  - `low_income` (for annual income $50K or below)
+
+### Example of a Valid Submission:
+```csv
+id,label
+0,high_income
+1,low_income
+2,low_income
+3,high_income
+4,low_income
+```
+</ANS>
+
+
+<ANS>
+For the given binary classification task, the input modalities are as follows:
+
+- **Tabular Input Map**: YES because the task involves tabular data with features such as age, education level, occupation type, and hours per week.
+  - **Related Files**:
+    - `./custom_task_test/train.csv`
+    - `./custom_task_test/test.csv`
+
+- **Image Input Map**: NO because there is no presence of image data in this task.
+
+- **Text Input Map**: NO because there is no presence of text data in this task.
+
+### Summary
+- **Tabular Input Map**: YES -> Related Files: `train.csv`, `test.csv`
+- **Image Input Map**: NO
+- **Text Input Map**: NO
+</ANS>
+
+
+<ANS>
+### Target Maps Needed for the Task
+
+- **tabular target map**: **YES** for the classification labels
+  - **Related files**: `train.csv`, `test.csv`, `sample_submission.csv`
+- **image target map**: **NO** as we are not predicting images in this task, we are predicting classes (tabular)
+- **text target map**: **NO** because there is no presence of text target in this task
+
+### Explanation
+- **Tabular Target Map**: The target column `label` in the `train.csv` and `test.csv` files contains categorical values (`low_income` and `high_income`). The task is to predict these categorical labels for the `id` values in the `sample_submission.csv` file, which makes the target a tabular classification problem.
+- **Image Target Map**: There are no image files or image-related data in the provided dataset, so no image target map is needed.
+- **Text Target Map**: There are no text files or text-related data in the provided dataset, so no text target map is needed.
+</ANS>
+
+<ANS>
+### Target Transforms for the Task
+
+#### Tabular Target Transform: YES
+- **Transform Function**:
+  - **Description**: Convert the categorical target labels (`low_income`, `high_income`) into numerical labels (e.g., 0 for `low_income`, 1 for `high_income`).
+  - **Purpose**: This transformation is necessary to allow the machine learning model to process the target labels, as most models require numerical inputs.
+  - **Example Input**: `['low_income', 'high_income', 'low_income']`
+  - **Example Output**: `[0, 1, 0]`
+
+- **Inverse Transform Function**:
+  - **Description**: Convert the numerical labels back into their original categorical form (`low_income`, `high_income`).
+  - **Purpose**: This transformation is necessary to convert the model's predictions back into the format required for the submission.
+  - **Example Input**: `[0, 1, 0]`
+  - **Example Output**: `['low_income', 'high_income', 'low_income']`
+
+#### Image Target Transform: NO
+- **Description**: There are no image files or image-related data in the provided dataset, so no image target transform is needed.
+
+#### Text Target Transform: NO
+- **Description**: There are no text files or text-related data in the provided dataset, so no text target transform is needed.
+
+### Summary
+- **Tabular Target Transform**:
+  - **Transform**: Convert categorical labels to numerical labels.
+  - **Inverse Transform**: Convert numerical labels back to categorical labels.
+- **Image Target Transform**: Not applicable.
+- **Text Target Transform**: Not applicable.
+</ANS>
+
+<ANS>
+```json
+{
+    "tabular_inputs_needed": True,
+    "image_inputs_needed": False,
+    "text_inputs_needed": False
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "tabular_targets_needed": True,
+    "image_targets_needed": False,
+    "text_targets_needed": False
+}
+```
+</ANS>
+
+<ANS>
+### Reasoning:
+
+1. **Binary Classification**:
+   - The task description explicitly states that this is a binary classification problem.
+   - The label column in both the training and test datasets contains two possible values: 'low_income' and 'high_income'.
+   - The goal is to predict whether an individual's income is above or below $50K, which fits the definition of a binary classification task.
+
+2. **Other Task Types**:
+   - **Regression**: Not applicable because the target variable is categorical (binary) rather than continuous.
+   - **Multiclass Classification**: Not applicable because there are only two classes.
+   - **Multi-target Classification**: Not applicable because there is only one target variable to predict.
+   - **Classification as a Regression**: Not applicable because the target variable is not provided as probabilities but as class labels.
+   - **Bounding Box Prediction** and **Image Segmentation**: Not applicable because the data is tabular and does not involve images or spatial data.
+
+### Conclusion:
+The task type is binary classification.
+
+### JSON Output:
+```json
+{
+    "task_type": "binary classification"
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "paths": [],
+    }
+```
+</ANS>
+
+<ANS>
+### Plan:
+1. Read the `train.csv` file into a DataFrame.
+2. Ensure the DataFrame has a unique identifier column; if not, create one.
+3. Save the DataFrame with the unique identifier and input features (excluding the target column) to a new CSV file named `train_tab_input_map.csv`.
+
+### Error Handling (if applicable):
+- If the `train.csv` file does not have a unique identifier column, add one by using the index of the DataFrame to ensure each row has a unique ID.
+</ANS>
+
+<ANS>
+```python
+import os
+import pandas as pd
+
+# Define the path to the train.csv file
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+train_path = os.path.join(raw_root,"custom_task_test","train.csv")
+
+# Load the train.csv file into a DataFrame
+train_df = pd.read_csv(train_path)
+
+# Ensure the 'id' column is present and rename it if necessary
+if 'id' not in train_df.columns:
+    train_df['id'] = train_df.index
+
+# Select the columns excluding the 'label' column to form the tabular input map
+train_tab_input_map = train_df[['id', 'age', 'education_level', 'occupation_type', 'hours_per_week']]
+
+# Save the resulting DataFrame to train_tab_input_map.csv
+train_tab_input_map.to_csv("./train_tab_input_map.csv", index=False)
+print("`train_tab_input_map.csv` created and saved.")
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script loads the train.csv file, selects specific columns including 'id', and saves the resulting DataFrame as train_tab_input_map.csv."
+}
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Read the Data**: Load the `train.csv` file into a pandas DataFrame to inspect the column types.
+2. **Create Column Types Dictionary**: Extract the data types of each column and store them in a dictionary.
+3. **Save as JSON**: Write the dictionary to a JSON file.
+
+### Error Handling
+- **Error**: If the file path is incorrect or the file does not exist, the code will raise a `FileNotFoundError`.
+- **Fix**: Ensure the file path is correct and the file exists at the specified location
+</ANS>
+
+<ANS>
+```python
+def column_types(input_df: pd.DataFrame) -> dict[str, Any]:
+    num_cols = input_df.select_dtypes(include=np.number).columns
+    datetime_types = ["datetime", "datetime64", "datetime64[ns]", "datetimetz"]
+    datetime_cols = input_df.select_dtypes(include=datetime_types).columns
+    column_type_dict = defaultdict(str)
+    for col in input_df.columns:
+        if col in num_cols:
+            column_type_dict[col] = "numerical"
+        elif col in datetime_cols:
+            column_type_dict[col] = "datetime"
+        elif input_df[col].dtype == 'object':
+            unique_values = input_df[col].nunique()
+            if unique_values <= 5:  # Assuming a small number of unique values indicates a categorical variable
+                column_type_dict[col] = "categorical"
+            else:
+                column_type_dict[col] = "text"
+    return column_type_dict
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "comment": "The column types appear to be correctly identified for the given task. 'age' and 'hours_per_week' are numerical, while 'education_level' and 'occupation_type' are categorical. There are no date or timestamp columns in the dataset. The current column types are satisfactory and do not require changes."
+}
+```
+</ANS>
+
+<ANS>
+Command: Terminate
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script loads a CSV file, determines the data type of each column, and saves the column types to a JSON file."
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "paths": [],
+    }
+```
+</ANS>
+
+<ANS>
+### Plan to Create the Tabular Training Targets Map
+
+1. **Extract the `id` and `label` columns from the `train.csv` file.**
+2. **Create a new DataFrame with the extracted columns, renaming the `label` column to `label_classification` to reflect the nature of the target.**
+3. **Save the new DataFrame to a CSV file named `train_tab_target_map.csv`.**
+
+### Error Handling
+- **Error**: If the `label` column is missing or has incorrect values, the target map will be invalid.
+- **Fix**: Ensure the `label` column exists and contains valid values (`low_income` and `high_income`) before creating the target map.
+</ANS>
+
+<ANS>
+```python
+"""
+This script creates the data map for the tabular training targets, i.e. `train_tab_target_map.csv`.
+This map is a `pd.DataFrame` object populated with respect to the data description and the data present in the raw data directory.
+The first column of the created map must be the "id" of each test data point.
+The subsequent columns of `train_tab_target_map.csv` are the tabular training target features, if any.
+
+>>> # Example
+>>> train_tab_target_map = pd.DataFrame(columns=["id", "tab_target_feature1", "tab_target_feature2", ...])
+
+Create train_tab_target_map
+"""
+# <｜fim▁begin｜>
+import os
+import pandas as pd
+
+# Define the path to the train.csv file
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+train_path = os.path.join(raw_root,"custom_task_test","train.csv")
+
+# Load the train.csv file into a DataFrame
+train_df = pd.read_csv(train_path)
+
+# Ensure the 'id' column is present and rename it if necessary
+if 'id' not in train_df.columns:
+    train_df['id'] = train_df.index
+
+# Extract the 'id' and 'label' columns and rename the 'label' column to 'label_classification'
+train_tab_target_map = train_df[['id', 'label']].rename(columns={'label': 'label_classification'})
+
+# Save the resulting DataFrame to train_tab_target_map.csv
+train_tab_target_map.to_csv("./train_tab_target_map.csv", index=False)
+print("`train_tab_target_map.csv` created and saved.")
+# <｜fim▁end｜>
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script extracts 'id' and 'label' columns from 'train.csv', renames 'label' to 'label_classification', and saves the result to 'train_tab_target_map.csv'."
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "label_classification": "top_k(1, None)"
+}
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "label_classification": "high_income"
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "paths": [],
+    }
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Load the Test Data**: Read the `test.csv` file into a pandas DataFrame.
+2. **Select Relevant Columns**: Ensure the DataFrame includes only the columns needed for the tabular input map (`id`, `age`, `education_level`, `occupation_type`, `hours_per_week`).
+3. **Save the Map**: Write the selected DataFrame to a new CSV file named `test_tab_input_map.csv`.
+
+### Error Handling
+- If the `test.csv` file does not contain all required columns, ensure the file has the correct structure and all necessary columns are present before proceeding.
+</ANS>
+
+<ANS>
+```python
+"""
+This script creates the data map for the tabular test inputs, i.e. `test_tab_input_map.csv`.
+This map is a `pd.DataFrame` object populated with respect to the data description and the data present in the raw data directory.
+The first column of the created map must be the "id" of each test data point.
+The subsequent columns of `test_tab_input_map.csv` are the tabular test input features, if any.
+
+>>> # Example
+>>> test_tab_input_map = pd.DataFrame(columns=["id", "tab_input_feature1", "tab_input_feature2", ...])
+
+Create test_tab_input_map
+"""
+# <｜fim▁begin｜>
+import os
+import pandas as pd
+
+# Define the path to the test.csv file
+raw_root = os.getenv("ALT_RAW_DATA_ROOT")
+test_path = os.path.join(raw_root,"custom_task_test","test.csv")
+
+# Load the test.csv file into a DataFrame
+test_df = pd.read_csv(test_path)
+
+# Ensure the 'id' column is present and rename it if necessary
+if 'id' not in test_df.columns:
+    test_df['id'] = test_df.index
+
+# Select the columns excluding the 'label' column to form the tabular input map
+test_tab_input_map = test_df[['id', 'age', 'education_level', 'occupation_type', 'hours_per_week']]
+# <｜fim▁end｜>
+# save
+test_tab_input_map.to_csv("./test_tab_input_map.csv", index=False)
+print("`test_tab_input_map.csv` created and saved.")
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The script loads the test.csv file, selects specific columns (id, age, education_level, occupation_type, hours_per_week), and saves them to a new CSV file named test_tab_input_map.csv."
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "paths": [],
+    }
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Load the Sample Submission File:** Read the sample submission CSV file to ensure the structure and column names are correct.
+2. **Map Predictions to the Correct Format:** Ensure the predictions DataFrame has the same `id` and `label` columns as the sample submission file, with `label` values being either `high_income` or `low_income`.
+3. **Save the Formatted DataFrame:** Write the formatted DataFrame to a new CSV file with the correct column names and structure.
+
+### Error Explanation (if applicable)
+- If the predictions DataFrame does not have the correct `id` and `label` columns, it will result in a mismatch with the sample submission file. This can be fixed by ensuring the predictions DataFrame is properly structured before saving.
+</ANS>
+
+<ANS>
+```python
+"""
+This script creates a function that takes an input Dataframe and formats it to follow the df_sample_submission format
+"""
+# useful imports
+import os
+import numpy as np
+import pandas as pd
+
+
+### Submission format definition
+def df_to_submission_format(
+    input_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Format the input_df to the submission format DataFrame
+    Args:
+        input_df: DataFrame to be formatted
+    Return:
+        format_submission_df: DataFrame formatted
+    """
+    # Ensure the input DataFrame has the required columns
+    if 'id' not in input_df.columns or 'label' not in input_df.columns:
+        raise ValueError("Input DataFrame must contain 'id' and 'label' columns")
+
+    # Create a copy of the input DataFrame to avoid modifying the original
+    format_submission_df = input_df.copy()
+
+    # Ensure the 'label' column only contains allowed values
+    allowed_values = {'high_income', 'low_income'}
+    if not set(format_submission_df['label']).issubset(allowed_values):
+        raise ValueError(f"Label column must only contain {allowed_values}")
+
+    # Ensure the 'id' column is of integer type
+    format_submission_df['id'] = format_submission_df['id'].astype(int)
+
+    return format_submission_df
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The function `df_to_submission_format` ensures the input DataFrame matches the required submission format by verifying and correcting the 'id' and 'label' columns."
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "paths": [],
+    }
+```
+</ANS>
+
+<ANS>
+### Plan
+
+1. **Ensure the Input DataFrame has the Correct Columns:** Verify that the input DataFrame contains the columns `id` and `label`.
+2. **Map the Target Column to Allowed Values:** Ensure the `label` column values are mapped to either `high_income` or `low_income`.
+3. **Format the DataFrame for Submission:** Rename the DataFrame columns to match the required format (`id` and `label`) and save it as a CSV file.
+
+### Error Handling
+- If the `label` column contains values other than `high_income` or `low_income`, ensure to map them correctly or raise an error indicating invalid values.
+</ANS>
+
+<ANS>
+```python
+"""
+This script creates a function that takes an input Dataframe and formats it to follow the df_sample_submission format
+"""
+# useful imports
+import os
+import numpy as np
+import pandas as pd
+
+
+### Submission format definition
+def df_to_submission_format(
+    input_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Format the input_df to the submission format DataFrame
+    Args:
+        input_df: DataFrame to be formatted
+    Return:
+        format_submission_df: DataFrame formatted
+    """
+    # Ensure the input DataFrame has the correct columns
+    if 'id' not in input_df.columns or 'label' not in input_df.columns:
+        raise ValueError("Input DataFrame must contain 'id' and 'label' columns.")
+
+    # Map the target column to allowed values
+    valid_labels = {'high_income', 'low_income'}
+    if not set(input_df['label']).issubset(valid_labels):
+        raise ValueError(f"Invalid values in 'label' column. Allowed values are {valid_labels}.")
+
+    # Ensure the label column only contains valid values
+    input_df['label'] = input_df['label'].map(lambda x: x if x in valid_labels else None)
+
+    # Format the DataFrame for submission
+    format_submission_df = input_df[['id', 'label']]
+
+    return format_submission_df
+```
+</ANS>
+
+<ANS>
+```json
+{
+    "summary": "The function `df_to_submission_format` ensures the input DataFrame has 'id' and 'label' columns, maps 'label' to 'high_income' or 'low_income', and returns a formatted DataFrame for submission."
+}
+```
+</ANS>
+
+<ANS>
+```json
+    {
+        "metric": "accuracy"
+    }
+```
+</ANS>

@@ -1,0 +1,84 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set rag = memory.retrieve({memory.mem_keys.RAG_RETRIEVAL: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set submission_summary = memory.retrieve({memory.mem_keys.SUBMISSION_SUMMARY: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+EDA: {{memory.retrieve({memory.mem_keys.EDA: 1.0})}}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+You have to generate a code to embed the text using a pre-trained transformer encoder model.
+You need to write a pytorch transformer model, where forward() takes the text images as input, and that outputs a latent representation as a tensor.
+You can use any pre-trained model from this list: BERT, RoBERTa, AlBERT, Multilingual-BERT, and other HuggingFace Transformers.
+When tokenizing the input, ensure that sequences longer than the model's maximum length are truncated.
+
+
+An example of this model code is:
+```python
+import torch
+from torch import nn, optim
+from transformers import BertModel, BertTokenizer
+
+class TextEmbedder(nn.Module):
+    def __init__(self):
+        super(TextEmbedder, self).__init__()
+        self.tok = BertTokenizer.from_pretrained("bert-base-uncased")
+        self.bert = BertModel.from_pretrained("bert-base-uncased")
+        for n, p in self.bert.named_parameters():
+            p.requires_grad = True
+
+    def forward(self, txt):
+        tokenized_dict = self.tok(txt, max_length=512, return_tensors='pt', padding=True, truncation=True)
+        for k in tokenized_dict:
+            if isinstance(tokenized_dict[k], torch.Tensor):
+                tokenized_dict[k] = tokenized_dict[k].to(self.bert.device)
+        last_hidden_state, pooler_output = self.bert(**tokenized_dict, return_dict=False)
+        return pooler_output
+```
+{% include "./ds_main_pipeline/code_error_report_for_code.jinja" %}
+
+Use your plans to help you implement the pytorch embedder model:
+{{ plan }}
+
+Write the code to create a model taking tensors of preprocessed features as input, and outputing an embedding tensor.
+1. You must ensure that a tokenizer is called before the model itself to vectorize the text.
+2. You must not forget to import the packages when needed.
+3. The model should be able to take as input text and output a tensor.
+4. DO NOT FORGET TO import nn from torch, and other modules.
+5. Transfer data  to the right device is important.
+{%- if submission_summary %}
+5. Try to use newer models than this last attempt: {{ submission_summary }}. Do not repeat these pre-trained models from the attempt.
+{%- endif %}
+
+Your task is to fill the blank and implement the feature engineering in this code:
+```python
+{% include templates_relative_path + "/txt_embed_code_template.jinja" %}
+```
+
+Only output the code that should be filled in the blank with no extra text. Don't forget to import any additional packages that you will use in the code.
+Your response should be in the format:
+```python
+<code>
+```

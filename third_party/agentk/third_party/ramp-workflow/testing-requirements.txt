@@ -1,0 +1,13 @@
+pytest
+pytest-cov
+codecov
+flake8
+nbconvert
+jupyter_client
+seaborn
+netCDF4
+xarray
+scikit-image
+joblib
+keras
+tensorflow

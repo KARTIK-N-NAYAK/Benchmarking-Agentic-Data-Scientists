@@ -1,0 +1,12 @@
+<ANS>
+```python
+CustomTestImageInputTransform: T.Compose = T.Compose([
+    T.Resize((256, 256)),
+    T.ToTensor(),  # Convert the image to a tensor
+    T.Lambda(
+      lambda x: x.repeat([3 if (i - x.ndim == -3 and d == 1) else 1 for i, d in enumerate(x.shape)])
+    ),
+    T.Lambda(lambda x: x[:3] if x.shape[0] > 3 else x),
+])
+```
+</ANS>

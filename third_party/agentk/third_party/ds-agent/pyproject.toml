@@ -1,0 +1,63 @@
+[project]
+name = "ds-agent"
+version = "0.1.0"
+description = "External libraries for the agent data science pipeline"
+authors =  [{ name = "Huawei - Agent K Team", email = "agent.k@huawei.com" }]
+
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "hydra-core>=1.3.2",
+    "pydantic==2.7.4",
+    "tqdm==4.65.0",
+    "numpy==1.26.4",
+    "elommr==1.2.1",
+    "kaggle==1.7.4.5",
+    "pandas==2.2.1"
+]
+
+[project.scripts]
+create-rag-db = "ds_agent.rag.unit_test_correction:main"
+
+[project.optional-dependencies]
+plot = [
+    "matplotlib",
+    "seaborn",
+    "plotly"
+]
+dev = [
+    "pytest"
+]
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+exclude = [".venv", "third_party"]
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+]
+ignore = ["E731", "E402"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agent", "ds_agent", "third_party"]
+single-line-exclusions = ["typing"]
+known-third-party = ["datasets"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]

@@ -1,0 +1,48 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task Description
+{{ task_description }}
+
+## Data Description
+{{ data_description }}
+
+### Plan:
+{{ plan }}
+
+## What to Do Next:
+Your task is to implement a class DataPreprocessor with a method `preprocess` based on the provided plan. This method should transform the data in `train_tab_input_map.csv` and `test_tab_input_map.csv` in such a way that:
+- All features are numerical
+- There are no missing values
+- The 'id' column remains unchanged (do not create any new "ID" columns)
+
+### Key Guidelines:
+1. Dynamic Column Handling:
+   - Column names may not follow any specific pattern. If the plan mentions features like A1 to A4, they may not be sequential (e.g., A3 might be missing).
+   - Ensure you iterate over the column names dynamically to avoid `KeyError`.
+
+2. Focus on Feature Engineering:
+   - Do **not** plan or write any code related to model training, as this stage is exclusively for data transformation.
+
+
+{% include "code_report_for_loop.jinja" %}
+
+## Decision Point:
+Based on the current code execution, choose the next action. Explain what step you want to implement next and select only **one** of the following actions:
+
+{% if code_output %}
+  - **"action": "Terminate"** (if all steps have been successfully implemented, and you are ready to move on to the next stage).
+  - **"action": "Continue"** (if you want to continue implementing feature engineering steps based on the current plan).
+{% else %}
+  - **"action": "Continue"** (Continue implementing feature engineering steps based on the current plan).
+{% endif %}
+
+{% include "loop_action_choice.jinja" %}

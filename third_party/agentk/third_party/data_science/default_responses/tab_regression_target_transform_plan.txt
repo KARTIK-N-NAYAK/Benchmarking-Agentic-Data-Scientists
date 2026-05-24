@@ -1,0 +1,14 @@
+<ANS>
+1. Standard Scaling:
+Apply standard scaling to standardize the values.
+ This will ensure that the model's predictions are well-behaved and can be easily interpreted.
+
+2. Handling NaN Values:
+For columns with NaN values, imputing them with a suitable value (e.g., mean, median) or using a strategy that preserves the distribution (e.g., median values).
+During the inverse transformation, ensure that NaN values are properly handled and re-introduced if necessary.
+
+3. Inverse Transformation:
+Implement the inverse_transform method to reverse the scaling.
+ This method will be crucial for projecting the model's predictions back to the original domain.
+Ensure that the inverse transformation correctly handles the NaN values.
+</ANS>

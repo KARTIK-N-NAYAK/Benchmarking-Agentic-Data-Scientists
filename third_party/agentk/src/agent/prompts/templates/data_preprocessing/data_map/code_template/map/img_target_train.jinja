@@ -1,0 +1,20 @@
+"""
+This script creates the data map for the image training targets, i.e. `train_img_target_map.csv`.
+This map is a `pd.DataFrame` object populated with respect to the data description and the data present in the raw data directory.
+The first column of the created map must be the "id" of each test data point.
+The subsequent columns of `train_img_target_map.csv` are the paths to the training target images, if any.
+
+>>> # Example
+>>> train_img_target_map = pd.DataFrame(columns=["id", "img_target1", "img_target2", ...])
+
+Create train_img_target_map
+"""
+# <｜fim▁begin｜>
+import os
+import pandas as pd
+# <｜fim▁hole｜>
+
+# <｜fim▁end｜>
+# save
+train_img_target_map.to_csv("./train_img_target_map.csv", index=False)
+print("`train_img_target_map.csv` created and saved.")

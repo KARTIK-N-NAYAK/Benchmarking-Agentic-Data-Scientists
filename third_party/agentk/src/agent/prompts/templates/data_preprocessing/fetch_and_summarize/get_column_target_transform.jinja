@@ -1,0 +1,42 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{# target_clf_column_names #}
+{# train_tab_target_map_info #}
+{# summarized_data_description #}
+{# summarized_metric_description #}
+### Competition Metric Description
+{{ summarized_metric_description }}
+
+### Submission Format Description
+{{ summarized_submission_format }}
+
+### Table Information about the Train Target Column Data Map `train_tab_target_map.csv`
+{{ train_tab_target_map_info }}
+
+### Write the Target Columns Transform Information
+Based on the above information, write for each target column name listed below, its corresponding transform to respect the submission format.
+Write this as a JSON object with each column name as key and its respective transform as value.
+
+These are the columns names to transform:
+{{ target_clf_column_names }}
+
+
+The values can only be:
+    - "proba" if for this target column the probabilities are required,
+    - "top_k(N, unknown_class)" where N is the k parameter for the top_k function and unknown class is the name to use for
+        unknown class
+
+Create a JSON object, respecting the following format example:
+```json
+{
+    "place_classification": "proba",
+    "gender_classification": "top_k(1, None)",
+    ...
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}
+
+{% include "snippets/unit_test.jinja" -%}

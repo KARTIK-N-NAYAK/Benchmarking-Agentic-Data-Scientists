@@ -1,0 +1,124 @@
+{% set create_map_tab_input_train = stages_code_dict.get("create_map_tab_input_train", dict()) %}
+{% set create_map_img_input_train = stages_code_dict.get("create_map_img_input_train", dict()) %}
+{% set create_map_txt_input_train = stages_code_dict.get("create_map_txt_input_train", dict()) %}
+{% set has_sample_submission = memory.retrieve({memory.mem_keys.HAS_SAMPLE_SUBMISSION: 1.0}) %}
+{% set show_sample_submission = memory.retrieve({memory.mem_keys.SHOW_SAMPLE_SUBMISSION_IN_CODE: 1.0}) %}
+{% set raw_id_column_name = memory.retrieve({memory.mem_keys.RAW_ID_COLUMN_NAME: 1.0}) %}
+{% set raw_target_column_names = memory.retrieve({memory.mem_keys.RAW_TARGETS_COLUMN_NAMES: 1.0}) %}
+{% set raw_data_view = memory.retrieve({memory.mem_keys.RAW_DATA_VIEW: 1.0}) %}
+{% set sample_submission_head = memory.retrieve({memory.mem_keys.SAMPLE_SUBMISSION_HEAD: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Data Description
+{{ memory.retrieve({memory.mem_keys.RAW_DATA_DESCRIPTION: 1.0}) }}
+
+### View of the top-level directory, these are the data you can use to solve this task:
+```
+{{ raw_data_view }}
+```
+
+### Modalities Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_INPUTS_MODALITY_MAPS: 1.0}) }}
+
+{% if memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) %}
+### These are some of the tables you have asked information about:
+{{ memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) %}
+### These are some tips to avoid common mistakes in the code:
+{{ memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) }}
+{% endif -%}
+
+{% if has_sample_submission and show_sample_submission %}
+### View of the sample submission:
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+{% endif -%}
+
+### Create `train_txt_input_map.csv`
+Your goal is to create a map for the training text inputs.
+The first column of that map must be named "id" and must contain the unique ID of each data point.
+If this column exists already in the data, make sure to rename it to "id", otherwise create it.
+The subsequent columns must the training input texts.
+Do not include target columns in the table you are creating, this will be done later in another table.
+{#It is important to ensure that input and target maps have the same length of rows.#}
+
+{% if create_map_tab_input_train and create_map_tab_input_train.get("code", None) %}
+### This is the code you helped write earlier to create the train tabular inputs:
+{{ create_map_tab_input_train.get("code") }}
+{{ create_map_tab_input_train.get("code_summary") }}
+{% endif -%}
+{% if create_map_img_input_train and create_map_img_input_train.get("code", None) %}
+### This is the code you helped write earlier to create the train image inputs:
+{{ create_map_img_input_train.get("code") }}
+{{ create_map_img_input_train.get("code_summary") }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+You should fix this error next.
+{% endif -%}
+{% else -%}
+{% if create_map_txt_input_train and create_map_txt_input_train.get("code", None) %}
+### This was the resulting code after your last attempt:
+{{ stages_code_dict['create_map_txt_input_train']['code'] }}
+{% if stages_code_dict['create_map_txt_input_train']['code_output']|length > 0 %}
+### This was the output:
+```
+{{ stages_code_dict['create_map_txt_input_train']['code_output'] }}
+```
+{% endif -%}
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test_fix_error.jinja" -%}
+
+{% if memory.retrieve({memory.mem_keys.RAG_LOCALLY_ACTIVE: 1.0}) and memory.retrieve({memory.mem_keys.INPUT_RAG_EXAMPLES: 1.0}) != None %}
+### Here are examples to help you write the code:
+```python
+{{ memory.retrieve({memory.mem_keys.INPUT_RAG_EXAMPLES: 1.0}) }}
+```
+{% endif -%}
+
+{% set code_template = memory.retrieve({memory.mem_keys.CODE_TEMPLATES: 1.0})["map_txt_input_train"] %}
+### Complete the code
+Complete the following code template in order to create the data map `train_txt_input_map.csv`:
+```python
+{% include code_template %}
+```
+Pay attention to the path where you load from. You should always provide absolute path to avoid `FileNotFound` error.
+Do not re-set index of the dataframe to create a new id column, instead use the columns present in the dataframe already.
+Create a new index column only when absolutely necessary.
+Finally, the step to save the final table is already written in the template - do not rewrite this part.
+The map is saved in the current directory on purpose.
+
+
+{% if memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) != None %}
+### Plan:
+{{ memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) }}
+{% endif -%}
+Your response should be the code to complete the above template, in the format:
+```python
+code
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

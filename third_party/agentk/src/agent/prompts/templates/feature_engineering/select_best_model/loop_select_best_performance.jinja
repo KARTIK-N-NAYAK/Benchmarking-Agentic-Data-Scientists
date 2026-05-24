@@ -1,0 +1,32 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set model_perf = memory.retrieve({memory.mem_keys.MODEL_PERF: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Model performance
+{{ model_perf }}
+
+## What to do next
+You ar given with a dictionary of model performances. You have to select best performance for the given data and context.
+You have to select index of the best model performance from the dictionary of model performances provided and complete the code.
+You do not want to do any feature engineering or model training.
+
+{% include "code_report_for_loop.jinja" %}
+
+To decide what to do now, explain what you want to do next and then select one (and only one) of the following available actions:
+{%- if code_output %}
+* "action": "Terminate"
+{%- else %}
+* "action": "Continue"
+{%- endif %}
+
+{% include "loop_action_choice.jinja" %}

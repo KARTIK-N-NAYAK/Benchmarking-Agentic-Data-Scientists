@@ -1,0 +1,47 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set training_code = memory.retrieve({memory.mem_keys.CODE_MODEL_TRAINING: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+### Plan Model training:
+{{ plan }}
+
+## What to do next
+Your task is to implement a class ModelTrainer with a methods `train_model` and `evaluate_model` based on the provided plan.
+
+Set Up the Environment:
+- Ensure that all necessary packages are imported.
+
+Key Considerations:
+- Target column is renamed in the target dataset. If 'y' is the target and type of task is regression then target column is renamed as 'y_regression'. You can use this new name or you can use index to get target column.
+- "ID" column is present as 'id'.
+
+Model training:
+- Select one good model for the data provided and write model training code. You do **not** need to do any processing on data.It is already processed.
+- No need to do any Feature engineering or hyper parameter optimisation to improve performance at this stage. Dataset is already feature engineered, out aim is to see how good is out feature engineered dataset is.
+
+Output:
+Model should work without error and find performance based on the mentioned metric.
+
+You need to fill in the blank within the code block below to implement the model training.
+```python
+{% include templates_relative_path + "classical_tab_training_code_template.jinja" %}
+```
+
+Your response should be in the format:
+```python
+<code>
+```
+
+and you should only fill the missing part.

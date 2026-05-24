@@ -1,0 +1,12 @@
+defaults:
+  - openai
+
+# Qwen via vLLM (direct, no tunnel)
+model_id: Qwen2.5-72B-Instruct
+base_url: http://releagpu01.tf.ki.privat:8010/v1
+
+context_length: 16384
+temperature: 0.0
+max_tokens: 512
+
+tokenizer_kwargs: {}

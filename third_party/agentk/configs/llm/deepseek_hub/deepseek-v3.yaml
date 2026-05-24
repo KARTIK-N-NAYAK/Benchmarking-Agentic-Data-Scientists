@@ -1,0 +1,6 @@
+defaults:
+  - deepseek_hub
+
+model_id: deepseek-chat
+context_length: 131072
+#temperature: 0.6

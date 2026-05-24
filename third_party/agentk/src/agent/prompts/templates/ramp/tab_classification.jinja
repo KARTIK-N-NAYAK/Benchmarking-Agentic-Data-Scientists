@@ -1,0 +1,17 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+For setting up the tabular submission, you must choose appropriate values for the following hyperparameters:
+* classifier : You can select one value from ['xgboost', 'lgbm', 'catboost']. This defines the classification model that you wish to use for the prediction task.
+
+Please select the best parameters for getting best prediction results.
+Please return only the parameters name in the following JSON format
+```json
+{
+    'classifier': '<choice_of_classifiers>'
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

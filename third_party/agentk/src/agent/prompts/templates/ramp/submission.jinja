@@ -1,0 +1,17 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+For setting up the tabular submission, you must choose appropriate values for the following hyperparameters:
+* n_folds: <int> Number of folds to select the top hyperparam optimized submissions from
+
+Please select the best parameters for getting best prediction results.
+Please return only the parameters name in the following JSON format, filling the appropriate values from above.
+```json
+{
+    "n_folds": <number_of_folds>
+}
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

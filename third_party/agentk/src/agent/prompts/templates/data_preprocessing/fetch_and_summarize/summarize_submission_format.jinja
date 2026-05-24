@@ -1,0 +1,37 @@
+{% set summarize_cot = memory.retrieve({memory.mem_keys.SUMMARIZE_COT: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{% if fetched_raw_data %}
+{#### View of the top-level directory {{ raw_data_dir }}#}
+{#after having downloaded and extracted the raw data from the source, these are the data you can use to solve this task:#}
+{#```#}
+{#{{ raw_data_view }}#}
+{#```#}
+{##}
+{#Here is some information about the tables in the raw data directory#}
+{#```#}
+{#{{ raw_table_info }}#}
+{#```#}
+{##}
+{#This is the summarized data description for the task:#}
+{##}
+{#{{ summarized_data_description }}#}
+
+This is the raw task description from the Kaggle website:
+```
+{{ raw_task_description }}
+```
+
+{% if has_sample_submission %}
+### View of the sample submission:
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+{% endif -%}
+
+Now summarize the submission format, extracting in particular the type of the targets and their allowed values.
+{% endif -%}
+{% include "summarize_cot.jinja" %}

@@ -1,0 +1,133 @@
+<ANS>
+Creating a MLP model
+</ANS>
+<ANS>
+```python
+
+import torch
+from torch import nn, optim
+from transformers import AutoTokenizer, T5EncoderModel
+
+class TextEmbedder(nn.Module):
+    def __init__(self):
+        super(TextEmbedder, self).__init__()
+        self.tok =  AutoTokenizer.from_pretrained("google-t5/t5-small")
+        self.fc = nn.Linear(512, 128)
+
+    def _preprocess_txt(self, raw_txt: str):
+        preprocess_txt = []
+        for c in raw_txt:
+            try:
+                val = str(c)
+            except:
+                val = ""
+            preprocess_txt.append(val)
+        return preprocess_txt
+
+    def forward(self, txt):
+       preprocess_txt = self._preprocess_txt(txt)
+       input_ids = self.tok(preprocess_txt, return_tensors="pt", padding='max_length', truncation=True).input_ids
+       input_ids = input_ids.to(torch.float32).to(self.fc.weight.device)
+
+       outputs = self.fc(input_ids)
+
+       return outputs
+```
+</ANS>
+<ANS>
+```json
+    {
+        "action": "Terminate"
+    }
+```
+</ANS>
+<ANS>
+```json
+{
+"summary": "Use T5Model"
+}
+```
+</ANS>
+<ANS>
+*   **Define the Decoder Model**:
+    *   Create a PyTorch model class inheriting from `torch.nn.Module`.
+    *   Design the architecture suitable for both regression and classification tasks.
+    *   For regression targets:
+        *   Output layer should have a single neuron for each regression target.
+        *   Activation function: None (for regression tasks, raw output is predicted).
+    *   For classification targets:
+        *   Output layer should have a single neuron for binary classification.
+        *   Activation function: None (output logits will be used to compute cross-entropy loss).
+*   **Implement Loss Functions**:
+    *   For regression targets:
+        *   Implement Mean Squared Error (MSE) loss function.
+        *   Compute MSE between predicted values and actual values.
+    *   For classification targets:
+        *   Implement Binary Cross-Entropy loss function.
+        *   Compute BCE between predicted logits and binary labels.
+*   **Model Architecture**:
+    *   Use fully connected layers for simplicity and effectiveness.
+    *   Experiment with different architectures, e.g., varying number of hidden layers and neurons, to find the optimal model complexity.
+    *   Apply ReLU activation functions between hidden layers for non-linearity.
+*   **Output Layer Configuration**:
+    *   For classification targets:
+        *   Ensure the output layer has a single neuron with no activation function.
+        *   Output logits directly for each binary classification prediction.
+    *   For regression targets:
+        *   Ensure the output layer has a single neuron with no activation function.
+        *   Directly output the predicted value for each regression target.
+</ANS>
+<ANS>
+```python
+class TabularHead(nn.Module):
+    def __init__(self, embed_dim: int, output_dim: int):
+        super(TabularHead, self).__init__()
+        self.fc = nn.Linear(embed_dim, output_dim)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.fc(x)
+
+def regression_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    return nn.MSELoss()(pred, target)
+
+def classification_loss(pred_logits: torch.Tensor, target_one_hot: torch.Tensor) -> torch.Tensor:
+    return nn.BCEWithLogitsLoss()(pred_logits, target_one_hot)
+```
+</ANS>
+<ANS>
+```json
+{
+"action": "Terminate"
+}
+```
+</ANS>
+<ANS>
+```json
+{
+"summary": "Vanilla single-layer MLP embedder"
+}
+```
+</ANS>
+<ANS>
+```json
+{
+"summary": "T5 embedder with a vanilla single-layer MLP embedder"
+}
+```
+</ANS>
+<ANS>
+```json
+{
+"action": "Send submission"
+}
+```
+</ANS>
+<ANS>
+```json
+    {
+        "submission": "submission_123"
+   }
+```
+</ANS>
+
+

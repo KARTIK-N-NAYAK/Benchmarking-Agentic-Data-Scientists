@@ -1,0 +1,55 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+This is the raw data description from the Kaggle website:
+
+{{ memory.retrieve({memory.mem_keys.RAW_DATA_DESCRIPTION: 1.0}) }}
+
+### View of the top-level directory {{ memory.retrieve({memory.mem_keys.RAW_DATA_DIR: 1.0}) }} after having downloaded and extracted
+the raw data from the source, these are the data you can use to solve this task:
+
+```
+{{ memory.retrieve({memory.mem_keys.RAW_DATA_VIEW: 1.0}) }}
+```
+
+
+Here is some information about the tables in the raw data directory
+```
+{{ memory.retrieve({memory.mem_keys.RAW_TABLE_INFO: 1.0}) }}
+```
+
+
+Based on the information above, determine what file is most likely to be an example of the submission a candidate would need to submit for that competition.
+Usually in Kaggle competitions, there is a file `sample_submission.csv` as part of the data that contains an example of the format in which the predictions need to be submitted.
+If that format is not respected, the submission is not valid.
+Sometimes, this file has a different name.
+Determine if this competition has such a file and if yes, write its path in a JSON output:
+```json
+    {
+        "detected_file": "<path>",
+    }
+```
+If you think that there is no such file in this competition, simply write
+```json
+    {
+        "detected_file": "No sample submission file in this competition.",
+    }
+```
+
+For example if the files for a competition are:
+```
+{{ memory.retrieve({memory.mem_keys.RAW_DATA_DIR: 1.0}) }}/competition_name
+    - train.csv
+    - test.csv
+    - Submit.csv
+```
+the correct response would be:
+```json
+    {
+        "detected_file": "{{ memory.retrieve({memory.mem_keys.RAW_DATA_DIR: 1.0}) }}/competition_name/Submit.csv",
+    }
+```
+
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

@@ -1,0 +1,13 @@
+defaults:
+  - hf_hub
+
+# HuggingFace model ID
+model_id: gpt2
+
+# Context window is small, but fine for tests
+context_length: 1024
+
+tokenizer_kwargs: {}
+
+# Sampling temperature
+temperature: 0.7

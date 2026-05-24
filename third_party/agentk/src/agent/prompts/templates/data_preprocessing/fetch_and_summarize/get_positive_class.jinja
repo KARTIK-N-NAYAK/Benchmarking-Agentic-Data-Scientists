@@ -1,0 +1,63 @@
+{% set fetched_raw_data = memory.retrieve({memory.mem_keys.FETCHED_RAW_DATA: 1.0}) %}
+{% set raw_task_description = memory.retrieve({memory.mem_keys.RAW_TASK_DESCRIPTION: 1.0}) %}
+{% set raw_table_info = memory.retrieve({memory.mem_keys.RAW_TABLE_INFO: 1.0}) %}
+{% set has_sample_submission = memory.retrieve({memory.mem_keys.HAS_SAMPLE_SUBMISSION: 1.0}) %}
+{% set sample_submission_head = memory.retrieve({memory.mem_keys.SAMPLE_SUBMISSION_HEAD: 1.0}) %}
+{% set raw_id_column_name = memory.retrieve({memory.mem_keys.RAW_ID_COLUMN_NAME: 1.0}) %}
+{% set raw_target_column_names = memory.retrieve({memory.mem_keys.RAW_TARGETS_COLUMN_NAMES: 1.0}) %}
+{% set target_classes = memory.retrieve({memory.mem_keys.TARGET_CLASSES: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+{% if fetched_raw_data %}
+This is the raw task description from the Kaggle website:
+```
+{{ raw_task_description }}
+```
+
+Here is some information about the tables in the raw data directory
+```
+{{ raw_table_info }}
+```
+
+{% if has_sample_submission %}
+### View of the sample submission:
+The input ID column name: {{ raw_id_column_name }}
+The target column name(s): {{ raw_target_column_names }}
+```
+{{ sample_submission_head }}
+```
+{% endif -%}
+
+### List of Target Names
+Note that the column names to use might be slightly different from the column names in the table views above.
+Indeed, these column names have been modified to reflect the task type.
+Use only the target column names provided below.
+The following are the columns target names:
+{{ target_classes }}
+
+From the above information, if the task is a multiclass classification task, determine which is the `positive` class.
+If the task is a binary classification, the positive class is usually 1 or True.
+Note: do not write "True" or "1", instead write True or 1 if the positive class value is a boolean.
+If the task is a classification with multiple targets, give a positive class name for each target column.
+Write the name of the positive class, if applicable, in JSON format:
+```json
+{
+    "target_column_name1": <positive_class_name1>,
+    "target_column_name2": <positive_class_name2>,
+    ...
+}
+```
+If not applicable, please write
+```json
+{
+    "target_column_name1": None,
+    "target_column_name2": None,
+    ...
+}
+```
+{% endif -%}
+
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

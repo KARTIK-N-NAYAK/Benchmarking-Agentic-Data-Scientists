@@ -1,0 +1,20 @@
+"""
+This script creates the data map for the image test inputs, i.e. `test_img_input_map.csv`.
+This map is a `pd.DataFrame` object populated with respect to the data description and the data present in the raw data directory.
+The first column of the created map must be the "id" of each test data point.
+The subsequent columns are the paths to the test input images, if any.
+
+>>> # Example
+>>> test_img_input_map = pd.DataFrame(columns=["id", "img_input1", "img_input2", ...])
+
+Create test_img_input_map
+"""
+# <｜fim▁begin｜>
+import os
+import pandas as pd
+# <｜fim▁hole｜>
+
+# <｜fim▁end｜>
+# save
+test_img_input_map.to_csv("./test_img_input_map.csv", index=False)
+print("`test_img_input_map.csv` created and saved.")

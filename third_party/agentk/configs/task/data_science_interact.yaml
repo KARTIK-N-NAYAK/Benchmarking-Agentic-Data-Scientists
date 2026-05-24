@@ -1,0 +1,30 @@
+# @package _global_
+defaults:
+  - data_science@task: rag_db
+
+agent:
+  pre_action_flow: ???
+  prompt_builder:
+    template_paths:
+      - data_science
+      - default
+
+task:
+  _target_: agent.tasks.data_science.DataScience
+
+  current_time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
+  task_id: ???
+  prepared_setup_dir: ???
+  prepared_version: ???
+  exp_id: ${task.task_id}/${task.prepared_version}/${task.current_time}
+  workspace_path: ./workspace/${task.exp_id}
+  terminate_after_training: false
+  summarize_cot: false
+  is_local_task: false
+
+  name: data_science
+  subtask: null
+  version: v0.1
+
+max_episodes: null
+max_env_steps: 100

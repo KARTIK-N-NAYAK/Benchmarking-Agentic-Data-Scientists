@@ -1,0 +1,120 @@
+# @package _global_
+defaults:
+  - data_science@task: rag_db
+
+agent:
+  pre_action_flow: ???
+  prompt_builder:
+    template_paths:
+      - data_preprocessing
+      - default
+
+task:
+  _target_: agent.tasks.data_preprocessing.DataPreProcessing
+
+  task_id: ???
+  task_url_base: https://www.kaggle.com/competitions
+  task_url: ${task.task_url_base}/${task.task_id}
+  current_time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
+  templates_relative_path: ./src/agent/prompts/templates/data_preprocessing
+  workspace_path: ./workspace/${task.task_id}/${task.current_time}
+  raw_data_dir_name: ${task.task_id}
+  path_to_python: ./third_party/agent_k_python_path.txt
+  db_faiss_k: 0 # Only applies to old-style prefetched RAG examples
+  path_to_saved_responses: null
+  modalities:
+    inputs: null
+    targets: null
+  sample_submission_file: null
+  human_takeover_step: 10
+  stage_max_retries: 5
+  show_sample_submission_in_code: false
+  use_table_view: true
+  use_error_instructions: true
+  use_final_unit_test: false
+  summarize_cot: false
+  is_local_task: false
+
+  # one code template per stage
+  code_templates:
+    map_tab_input_train: data_map/code_template/map/tab_input_train.jinja
+    map_img_input_train: data_map/code_template/map/img_input_train.jinja
+    map_txt_input_train: data_map/code_template/map/txt_input_train.jinja
+    map_tab_target_train: data_map/code_template/map/tab_target_train.jinja
+    map_img_target_train: data_map/code_template/map/img_target_train.jinja
+    map_txt_target_train: data_map/code_template/map/txt_target_train.jinja
+    transform_tab_target_train: data_map/code_template/transform/tab_target_train.py
+    transform_img_target_train: data_map/code_template/transform/img_target_train.jinja
+    transform_txt_target_train: data_map/code_template/transform/txt_target_train.jinja
+    map_tab_input_test: data_map/code_template/map/tab_input_test.jinja
+    map_img_input_test: data_map/code_template/map/img_input_test.jinja
+    map_txt_input_test: data_map/code_template/map/txt_input_test.jinja
+    metric: metric/code_template_metric.py
+    ramp_metric: metric/code_template_ramp_metric.py
+    submission_format: submission_format/code_template_submission_format.jinja
+    submission_format_alt: submission_format/code_template_submission_format.jinja
+    column_types: column_types/code_template_column_types.py
+
+
+  # one or more unit tests per stage (WARNING: Order matters!)
+  unit_tests:
+    map_tab_input_train:
+      - data_map/unit_test_template/map/tab_input_train.py
+    map_img_input_train:
+      - data_map/unit_test_template/map/img_input_train.py
+    map_txt_input_train:
+      - data_map/unit_test_template/map/txt_input_train.py
+    map_tab_target_train:
+      - data_map/unit_test_template/map/tab_target_train.py
+    map_img_target_train:
+      - data_map/unit_test_template/map/img_target_train.py
+    map_txt_target_train:
+      - data_map/unit_test_template/map/txt_target_train.py
+    map_tab_train:
+      - data_map/unit_test_template/map/tab_train.py
+    map_img_train:
+      - data_map/unit_test_template/map/img_train.py
+    map_txt_train:
+      - data_map/unit_test_template/map/txt_train.py
+    transform_tab_target_train:
+      - data_map/unit_test_template/transform/tab_target_train.py
+    transform_img_target_train:
+      - data_map/unit_test_template/transform/img_target_train.py
+    transform_txt_target_train:
+      - data_map/unit_test_template/transform/txt_target_train.py
+    map_tab_input_test:
+      - data_map/unit_test_template/map/tab_input_test.py
+    map_img_input_test:
+      - data_map/unit_test_template/map/img_input_test.py
+    map_txt_input_test:
+      - data_map/unit_test_template/map/txt_input_test.py
+    map_all_train:
+      - data_map/unit_test_template/maps_train.py
+    dataloader_train:
+      - data_map/unit_test_template/dataloader_train.py
+    dataloader_test:
+      - data_map/unit_test_template/dataloader_test.py
+    metric:
+      - metric/unit_test_metric.py
+    submission_format:
+      - submission_format/unit_test_submission_format.py
+    submission_format_alt:
+      - submission_format/unit_test_submission_format_alt.py
+    column_types:
+      - column_types/unit_test_column_types.py
+
+
+
+  # change these tokens and your templates accordingly
+  fim_tokens:
+    fim_start_token: '<｜fim▁begin｜>'
+    fim_hole_token: '<｜fim▁hole｜>'
+    fim_end_token: '<｜fim▁end｜>'
+
+  name: data_preprocessing
+  description:
+  subtask: null
+  version: v1.21
+
+max_episodes: null
+max_env_steps: 100

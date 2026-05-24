@@ -1,0 +1,24 @@
+{% include "system_prompt.jinja" %}
+
+{% if memory.retrieve({memory.mem_keys.RAN_MODELLING: 1.0}) == "True" %}
+Your response should not be an action or a thought, but an available option from the list, using the following format:
+Command: <command>
+[[ USER ]]
+{% include "DS-Task/DS-Modelling/trajectory_modelling.jinja" %}
+Here is a list of the available options:
+
+Continue: Think and code a model using a validation dataset
+Terminate: Optimize your best model for hyperparameters.
+
+Here is some further guidance on how to choose the Command:
+1. If you think you have already achieved good performance with the model, and the code does not have any error, then choose the Command: Terminate to finalize your model.
+2. If the code has any import errors or indexing issues, fix them first by choosing Command: Continue.
+3. You should choose Command: Terminate if good performance on all metrics is achieved already.
+4. Only choose Command: Continue if you think you need to fix an error or the accuracy can be significantly increased.
+
+Choose a Command that will help you complete the task.
+{% else %}
+[[ USER ]]
+Please focus only on outputting a Command here.
+Please only output the following string: 'Command: Continue'
+{% endif %}

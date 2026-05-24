@@ -1,0 +1,4 @@
+db_faiss_path: /
+embedding_model_name: "thenlper/gte-small"
+db_embedding_field: "code"
+turn_off_rag_locally_on_failure: false

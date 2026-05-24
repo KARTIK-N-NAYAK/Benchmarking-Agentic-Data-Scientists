@@ -1,0 +1,266 @@
+{%- set task_category = memory.retrieve({memory.mem_keys.TASK_CATEGORY: 1.0}) %}
+
+{%- if task_category == "data_science" %}
+Related data science examples are provided below.
+
+The user provides you the following information:
+Data path: "./data/insurance.csv"
+User query: The goal is to fit a linear regression model to predict the \"charges\" column.
+Follow the steps below to solve the problem:
+1. Preprocess the data:
+(1) Remove rows with missing values;
+(2) Use one-hot encoding to transform categorical features;
+(3) Scale numerical features within the range [0, 1].
+Do not preprocess the \"charges\" column.
+2. Split the data into training and test set with ratio 4:1.
+3. Fit a linear regression model on the training set and predict on the test set.
+4. Print RMSE (root mean square error) on the test set.
+
+{%- if cot_type in ["few_shot_cot", "react"] %}
+Thought:
+1. Load the dataset from the data path provided by the user.
+2. Preprocess the dataset like dropping the samples with missing value, because a linear regression model can not handle missing values by default.
+3. Do some basic feature engineering. E.g., linear regression model requires all inputs to be numerical, so we need to convert categorical features into numerical form (such as using one-hot encoding). We also need to normalize the numerical features as linear regression is sensitive to the scale of the data.
+4. Split the dataset into training set and test set.
+5. Fit a linear regression model on the training set and predict on the test set.
+6. Print RMSE on test set as the user requires.
+{%- endif %}
+
+Code:
+```python
+# import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
+
+# loading the CSV data
+data = pd.read_csv('./workspace/data/insurance.csv')
+
+# drop rows with missing values
+data = data.dropna()
+
+# Feature Engineering
+# One-hot encoding for categorical variables
+data = pd.get_dummies(data)
+
+# Scale numerical variables (except the target column)
+scaler = MinMaxScaler()
+for col in data.columns:
+    if data[col].dtype in ['int64', 'float64'] and col != 'charges':
+        data[col] = scaler.fit_transform(data[[col]])
+
+# split the data into train and test sets
+X = data.drop('charges', axis=1)
+y = data['charges']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# model training - Linear Regression
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Predict
+y_pred = model.predict(X_test)
+
+# Report RMSE on both training and test set
+print('Root Mean Squared Error:')
+print('Test set: ', mean_squared_error(y_test, y_pred, squared=False))
+```
+{%- endif %}
+
+{%- if task_category == "data_science_hebo" %}
+Related data science examples are provided below.
+
+The user provides you the following information:
+Data path: "./data/insurance.csv"
+User query: We want to fit a neural network to predict the \"charges\" column.
+The goal is to find the optimal hyperparameters, such as learning rate, number of hidden layer and number of nodes on each layer, that a neural network needs in order to perform regression in the provided dataset using the HEBO package for bayesian optimisation.
+Assume that the remaining hyperparameters as set to default by the neural network.
+Follow the steps below to solve the problem:
+1. Preprocess the data by using one-hot encoding to transform categorical features;
+2. Split the data into training and test set with ratio 70:15:15.
+3. Implement the function that receives the hyperparameters and returns the trained model
+4. Implement the function that receives the model and computes the MSE over a given dataset
+5. Define the search space of HEBO
+6. Run 10 times HEBO
+7 Find the optimal hyperparameters
+8. Estimate the MSE on the test set.
+
+{%- if cot_type in ["few_shot_cot", "react"] %}
+Thought:
+1. Load the dataset from the data path provided by the user.
+2. Preprocess the dataset like dropping the samples with missing value, because a linear regression model can not handle missing values by default.
+3. Do some basic feature engineering. E.g., linear regression model requires all inputs to be numerical, so we need to convert categorical features into numerical form (such as using one-hot encoding). We also need to normalize the numerical features as linear regression is sensitive to the scale of the data.
+4. Split the dataset into training set and test set.
+5. Fit a linear regression model on the training set and predict on the test set.
+6. Print RMSE on test set as the user requires.
+{%- endif %}
+
+Code:
+```python
+from sklearn.neural_network import MLPRegressor
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import numpy as np
+from hebo.design_space.design_space import DesignSpace
+from hebo.optimizers.hebo import HEBO
+# this must be always added
+from pymoo.config import Config
+Config.warnings['not_compiled'] = False
+
+# load the dataset
+df = pd.read_csv("data/insurance.csv", sep=',')
+
+# transform the code to one-hot
+data_encoded = pd.get_dummies(df)
+
+# create the X and y
+X_data = data_encoded.drop("charges", axis=1).to_numpy()
+y_data = data_encoded["charges"].to_numpy()
+
+# training-validation-test-split
+# keep 70 % of data for training
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.3)
+# split the remaining 30% equally into validation and test set
+X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5)
+
+# function that fits the model to the training set
+def fit_regression_model(X, y, hyperparameters):
+    model = MLPRegressor(learning_rate_init=float(hyperparameters["learning_rate"]), hidden_layer_sizes=int(hyperparameters['num_layers']) * [int(hyperparameters['nodes_per_layer'])])
+    model.fit(X, y)
+    return model
+
+# function that estimates the MSE over the data
+def compute_mean_squared_error(X, y, model):
+    predictions = model.predict(X)
+    mse = np.mean((predictions - y) ** 2)
+    return np.array(mse).reshape(-1, 1) # must be a numpy array
+
+
+hyperparameter_search_space = DesignSpace().parse([
+    {'name' : 'learning_rate', 'type' : 'num', 'lb' : 0.0001, 'ub' : 0.01},
+    {'name' : 'num_layers', 'type' : 'int', 'lb' : 1, 'ub' : 3},
+    {'name' : 'nodes_per_layer', 'type' : 'int', 'lb' : 20, 'ub' : 80}
+])
+hyperparameter_optimizer = HEBO(hyperparameter_search_space)
+
+for i in range(10):
+    hyperparameters = hyperparameter_optimizer.suggest(n_suggestions=1)
+    model = fit_regression_model(X_train, y_train, hyperparameters)
+    validation_error = compute_mean_squared_error(X_val, y_val, model)
+    hyperparameter_optimizer.observe(hyperparameters, validation_error)
+
+# get the hyperparameters with the minimum validation loss
+best_hyperparameters = hyperparameter_optimizer.best_x
+print(f'Used hyperparameters: {best_hyperparameters}')
+
+# fit the model with the best hyperparameters
+model = fit_regression_model(X_data, y_data, best_hyperparameters)
+
+# compute and print the MSE in the test set
+test_error = compute_mean_squared_error(X_test, y_test, model)[0, 0]
+print('Mean Squared Error: ', test_error)
+```
+{%- endif %}
+
+{%- if task_category == "synthesis_optimisation" %}
+Related logic synthesis examples are provided below.
+
+The user provides you the following information:
+Logic synthesis executable path: "./third_party/abc"
+Logic circuit path: "./data/circuit.blif"
+List of operators: ["rewrite", "balance", ...]
+Reference sequence: "rewrite; refactor; rewrite;..."
+User query: We want to optimize the size and level of the circuit by applying an optimized sequence of logic operators.
+The goal is to find the optimal sequence of logic synthesis operators among the user-specified operators using the HEBO package for bayesian optimisation.
+As a sequence of operators is applied, we can get the reference size and level (ref_size and ref_level) of the mapped netlist by parsing the result of the "print_stats" operator.
+Similarly, when applying a sequence `s`, we can get the size and level of the graph (s_size and s_level) using `print_stats` command.
+We want to use HEBO to find the sequence of 20 operators that minimizes the QoR defined s_size / ref_size + s_level / ref_level.
+Follow the steps below to solve the problem:
+1. Define the user-specific variables: logic synthesis executable path, logic circuit path, reference sequence, list of operators.
+2. Implement the function that converts a list or array of operator indices into a string corresponding to an operator sequence.
+3. Implement the function that takes a string corresponding to an operator sequence and outputs the circuit size and level after applying the sequence.
+4. Evaluate the ref_size and level_size.
+5. Define the function that computes the QoR associated to a list or array of operator indices.
+5. Define the search space of HEBO.
+6. Run 10 times HEBO.
+7. Find the optimal logic synthesis sequence.
+8. Print the optimal sequence and the optimal QoR.
+
+{%- if cot_type in ["few_shot_cot", "react"] %}
+Thought:
+1. Compute the reference sequence performance (circuit size and circuit level) at the beginning.
+2. Do not forget to use `read` operation to read the original circuit, use `strash` to convert it to an AIG in order to apply the logic synthesis, and finally use `if -K 6` to map it into a netlist to get its size and level.
+3. Do not forget to capture the output of the logic synthesis execution and to parse it (the output can contain several lines and the one to capture is the last one that contains patterns "nd *= *[0-9]+" for the size and "lev *= *[0-9]+" for the level).
+4. Write the black-box taking into account all the required elements (converting indices to command, evaluating command, parsing output, computing the QoR by comparison with the reference performance).
+5. Print at the end the best sequence with its QoR as required.
+{%- endif %}
+
+Code:
+```python
+from typing import *
+import pandas as pd
+from hebo.design_space.design_space import DesignSpace
+from hebo.optimizers.hebo import HEBO
+import os
+import numpy as np
+import re
+
+# this must be always added
+from pymoo.config import Config
+Config.warnings['not_compiled'] = False
+
+# this must be always added: logic synthesis executable, reference sequence, available operators,
+ABC_EXE = "./third_party/abc"
+REF_SEQ = "balance; rewrite; refactor; &get; &fraig; &put"
+OPERATORS = ["rewrite", "rewrite -z", "refactor", "refactor -z", "resub", "resub -z", "balance", "&get; &fraig; &put", "&get; &sopb; &put", "&get; &blut; &put", "&get; &dsdb; &put"]
+SEQ_LEN = 20
+
+circuit_path = "./data/max.blif"
+
+def eval_seq(seq: str) -> Dict[str, float]:
+    """
+    Args:
+        seq: a string representing a sequence of logic synthesis operators
+
+    Returns:
+        res: a dictionary with keys "size" and "level"
+    """
+    out = os.popen(f'{ABC_EXE} -c "read {circuit_path}; strash; {seq}; if -K 6; print_stats;"').read()
+    res = {}
+    for line in out.split("\n"):
+        if "lev =" not in line:
+            continue
+        res["level"] = int(re.findall("lev *= *[0-9]+", line)[0].split("=")[-1])
+        res["size"] = int(re.findall("nd *= *[0-9]+", line)[0].split("=")[-1])
+    if len(res) == 0:
+        print(out)
+    return res
+
+ref_stats = eval_seq(REF_SEQ)
+
+def compute_qor(seq_op_inds: np.ndarray) -> np.ndarray:
+    seq = ";".join([OPERATORS[seq_op_ind] for seq_op_ind in seq_op_inds])
+    stats = eval_seq(seq)
+    qor = stats["size"] / ref_stats["size"] + stats["level"] / ref_stats["level"]
+    return np.array([[qor]])
+
+
+logic_synth_search_space = DesignSpace().parse([
+    {'name' : f'op{i}', 'type' : 'cat', 'categories': list(range(len(OPERATORS)))} for i in range(SEQ_LEN)
+])
+logic_synth_optimizer = HEBO(logic_synth_search_space)
+
+for i in range(10):
+    seq_op_inds = logic_synth_optimizer.suggest(n_suggestions=1)
+    qor = compute_qor(seq_op_inds.values.flatten())
+    logic_synth_optimizer.observe(seq_op_inds, qor)
+
+# get the best sequence and associated QoR
+best_seq = [OPERATORS[i] for i in logic_synth_optimizer.best_x.values[0]]
+print(f'Best logic synthesis sequence: {best_seq}')
+print(f'Best QoR: {logic_synth_optimizer.best_y}')
+```
+{%- endif %}

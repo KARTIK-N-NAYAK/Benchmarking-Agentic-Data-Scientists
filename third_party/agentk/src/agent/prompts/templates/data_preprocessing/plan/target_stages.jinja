@@ -1,0 +1,29 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Task Description
+This is the summary of the task description that you wrote previously:
+{{ task_description }}
+
+### Target modalities
+This is the summary of the required target modalities that you wrote previously:
+{{ target_modalities }}
+
+Based on the above information, write a JSON object with the three keys deciding if each modality is needed as target.
+- "tabular_targets_needed" is True if the task is a regression or some type of classification, otherwise it's False
+- "image_targets_needed" is True if the task is an image generation task of some sort, otherwise it's False.
+- "text_targets_needed" is True if the task is a text generation task of some sort, otherwise it's False.
+
+Please fill and return the following JSON object, respecting its format:
+```json
+{
+    "tabular_targets_needed": <True/False>,
+    "image_targets_needed": <True/False>,
+    "text_targets_needed": <True/False>,
+}
+```
+The values can only be the python boolean elements: True or False.
+Not "True", not true, not "true".
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif -%}

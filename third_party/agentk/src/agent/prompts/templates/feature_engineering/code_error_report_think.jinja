@@ -1,0 +1,12 @@
+{% include "code_report.jinja" %}
+
+{%- if code_error %}
+### The error in your code was:
+```python
+{{ (code_error)[-6000:] }}
+
+```
+
+In your plan, explain in briefly why this error happened and how to fix it.
+
+{%- endif %}

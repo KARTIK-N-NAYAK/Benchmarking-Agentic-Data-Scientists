@@ -1,0 +1,43 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## Your code for text embedding
+You designed the following plan to create a model generating a latent representation of text:
+{{ plan }}
+
+This is the code you've actually generated and that will be used to embed the text for the current solution:
+{{ code }}
+
+You now need to give a short description of the embedding code to give insights on what is done at this stage of the solution.
+
+## TODO
+Provide a one-line summary of your plan and code. If plan and code are not aligned, ignore the plan and only provide a concise description of what the code is doing. Output the summary in json format:
+```json
+    {
+        "summary": "<plan_and_code_summary>"
+    }
+```
+{% if format_err_msg %}
+{{ format_err_msg }}
+{% endif %}

@@ -1,0 +1,45 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set fe_code = memory.retrieve({memory.mem_keys.CODE_FE: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## What to do next
+You have to write model training code for the dataset which is already preprocessed.
+
+Set Up the Environment:
+Ensure that all necessary packages are imported.
+
+Select Target:
+Target column is renamed in the target dataset. If 'y' is the target and type of task is regression then target column is renamed as 'y_regression'. You can use this new name or you can use index to get target column.
+
+Model training:
+- Select one good model for the data provided and write model training code. You do **not** need to do any processing on data.It is already processed.
+- No need to do any Feature engineering or hyper parameter optimisation to improve performance at this stage. Dataset is already feature engineered, out aim is to see how good is out feature engineered dataset is.
+
+Output:
+Model should work without error and find performance based on the mentioned metric.
+
+
+{% include "code_report_for_loop.jinja" %}
+
+
+{%- if code_output %}
+* "action": "Terminate" (if you implemented model training and code works without error irrespective of the performance)
+{%- else %}
+* "action": "Continue" (if there is any error in the code .)
+{%- endif %}
+
+{% include "loop_action_choice.jinja" %}

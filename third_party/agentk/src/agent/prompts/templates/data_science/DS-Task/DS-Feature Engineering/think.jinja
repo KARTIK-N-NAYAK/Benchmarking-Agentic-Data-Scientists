@@ -1,0 +1,36 @@
+{% include "system_prompt.jinja" %}
+[[ USER ]]
+{%- set obs = memory.retrieve({memory.mem_keys.OBSERVATION: 1.0}) %}
+{{obs}}
+
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- if code %}
+Here is your code in the last step:
+```python
+{{code}}
+```
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+
+{%- if code_error == "" %}
+This is the performance of your features on a baseline model: {{memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})}}
+
+
+{%- else %}
+The code has bugs, and here is the error message: {{code_error}}
+Please analyze why this error happens and how to modify the code to make it work.
+{%- endif %}
+
+{%- else %}
+Create a plan to edit the following function code to have good feature engineering for the data.
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+```python
+{% include templates_relative_path + "/fe_template.jinja" %}
+```
+{%- endif %}
+Only give a plan, without any code.
+
+Your plan should focus on what parts of the feature engineering process you may have missed and how to fix if there is an error.
+You can try things like log-transformation to improve data quality.
+You must ensure all columns have been converted to numerical so the data is ready for modelling.
+Your plan should be in the format:
+Thought: ...

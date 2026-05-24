@@ -1,0 +1,72 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set plan = memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) %}
+{%- set templates_relative_path = memory.retrieve({memory.mem_keys.TEMPLATES_RELATIVE_PATH: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set submission_summary = memory.retrieve({memory.mem_keys.SUBMISSION_SUMMARY: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+You have to Complete the function `calculate_class_weights` function outlined to create a weights vector to handle class imbalance.
+The weight vector should have a weight for each item in the dataset.
+
+For example a generalised way to find weight vector is:
+```python
+def calculate_class_weights(target_df:pd.DataFrame, target_columns: list) -> np.ndarray:
+
+    if len(target_columns) > 1 :
+        multi_label =  True
+    else:
+        multi_label =  False
+
+    if not multi_label:
+        # Single-label classification (including binary classification):
+        class_frequencies = Counter(target_df[target_columns[0]])
+        class_weights = {cls: 1.0 / freq for cls, freq in class_frequencies.items()}
+        weight_vector = target_df[target_columns[0]].map(class_weights).values
+
+    else:
+        # Multi-label classification: Each column corresponds to a different class,
+        class_frequencies = target_df.sum(axis=0)
+        class_weights = {cls: 1.0 / freq for cls, freq in class_frequencies.items() if freq > 0}
+        weight_vector = target_df.apply(lambda row: sum(class_weights[cls] for cls in target_df.columns if row[cls] == 1), axis=1).values
+
+    # Normalize the weight vector to ensure it sums up to 1
+    weight_vector *= len(weight_vector) / sum(weight_vector)
+
+    return weight_vector
+```
+Use your plan:
+{{ plan }}
+
+{% include "./ds_main_pipeline/code_error_report_for_code.jinja" %}
+
+Your task is to fill the blank and implement code to generate class imbalance:
+```python
+{% include templates_relative_path + "/class_imbalance_code_template.jinja" %}
+
+
+Only output the code that should be filled in the blank with no extra text. Don't forget to import any additional packages that you will use in the code.
+Your response should be in the format:
+```python
+<code>
+```

@@ -1,0 +1,40 @@
+{%- set task_description = memory.retrieve({memory.mem_keys.TASK_DESCRIPTION: 1.0}) %}
+{%- set data_description = memory.retrieve({memory.mem_keys.DATA_DESCRIPTION: 1.0}) %}
+{%- set available_actions = memory.retrieve({memory.mem_keys.AVAILABLE_ACTIONS: 1.0}) %}
+{%- set current_submission = memory.retrieve({memory.mem_keys.CURRENT_SUBMISSION: 1.0}) %}
+{%- set code = memory.retrieve({memory.mem_keys.CODE: 1.0}) %}
+{%- set code_output = memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) %}
+{%- set code_error = memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) %}
+
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+
+## Task description
+{{ task_description }}
+
+## Data description
+{{ data_description }}
+
+## Available solutions
+{%- include "./top_level/submission_list.jinja" %}
+
+## Current solution progress
+You have started creating a new solution. Its status is as follows:
+{{ current_submission.submission_state.to_str() }}
+
+## What to do next
+You have to generate a code to transform the test images using a composition of torchvision transforms.
+Apply transformations based on the code generated for train images, that are deterministic and do not include any randomness
+
+{% include "./ds_main_pipeline/code_report_for_loop.jinja" %}
+
+To decide what to do now, explain what you want to do next and then select one (and only one) of the following available actions:
+{%- if code_output %}
+{#* "action": "Continue" (if you want to create a new plan and new code to perform embedding)#}
+* "action": "Terminate" (if you want to keep the transform code written above and move to the next stage.)
+{%- else %}
+* "action": "Continue" (if you want to create a plan and a code to perform image transform)
+{%- endif %}
+
+{% include "./ds_main_pipeline/loop_code/loop_action_choice.jinja" %}

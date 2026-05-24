@@ -1,0 +1,12 @@
+defaults:
+  - openai
+
+# vLLM local server
+model_id: Qwen2.5-7B-Instruct
+base_url: http://localhost:8000/v1
+
+context_length: 32768
+temperature: 0.0
+max_tokens: 512
+
+tokenizer_kwargs: {}

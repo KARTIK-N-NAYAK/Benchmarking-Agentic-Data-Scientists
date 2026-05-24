@@ -1,0 +1,68 @@
+{% set create_transform_img_target_train = stages_code_dict.get("create_transform_img_target_train", dict()) %}
+{% set summarize_cot = memory.retrieve({memory.mem_keys.SUMMARIZE_COT: 1.0}) %}
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+# Submission Format Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_SUBMISSION_FORMAT: 1.0}) }}
+
+# Modalities Description
+{{ memory.retrieve({memory.mem_keys.SUMMARIZED_TARGETS_MODALITY_TRANSFORMS: 1.0}) }}
+
+{% if memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) %}
+### These are some of the tables you have asked information about:
+{{ memory.retrieve({memory.mem_keys.ACTIVE_TABLE_VIEW: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) %}
+### These are some tips to avoid common mistakes in the code:
+{{ memory.retrieve({memory.mem_keys.ERROR_INSTRUCT: 1.0}) }}
+{% endif -%}
+
+{% if memory.retrieve({memory.mem_keys.CODE_RAN: 1.0}) %}
+### This was the resulting code after your last attempt:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+{% if memory.retrieve({memory.mem_keys.CODE_PASSED: 1.0}) %}
+{% if memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0})|length > 0 %}
+### This was the output:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_OUTPUT: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+### The error in your code was:
+```
+{{ memory.retrieve({memory.mem_keys.CODE_ERROR: 1.0}) }}
+```
+{% endif -%}
+{% else -%}
+{% if create_transform_img_target_train and create_transform_img_target_train.get("code", None) %}
+### This was the resulting code after your last attempt:
+{{ stages_code_dict['create_transform_img_target_train']['code'] }}
+{% if stages_code_dict['create_transform_img_target_train']['code_output']|length > 0 %}
+### This was the output:
+```
+{{ stages_code_dict['create_transform_img_target_train']['code_output'] }}
+```
+{% endif -%}
+{% endif -%}
+{% endif -%}
+
+{% include "snippets/unit_test.jinja" -%}
+
+Your goal is to create a transform function and an inverse transform function for the training image targets.
+If the train tabular targets do not require being transformed, the functions should simply be the identity, i.e. return the targets unchanged.
+
+Example: the task is to predict a segmentation mask and the targets in the submission format are strings containing space delimited list of pairs.
+These pairs of values contain a start position and a run length.
+E.g. '1 3' implies starting at pixel 1 and running a total of 3 pixels (1,2,3).
+For example, '1 3 10 5' implies pixels 1,2,3,10,11,12,13,14 are to be included in the mask.
+The pixels are one-indexed and numbered from top to bottom, then left to right: 1 is pixel (1,1), 2 is pixel (2,1), etc.
+In this case
+- The transform function should map these strings to binary masks of the correct shape with respect to the task and data description.
+- The inverse transform function should accept a binary mask and return the string in the correct submission format.
+
+Considering the submission format description above, please write a **short** (no more than 3 steps) plan of how you wou write these two functions.
+If there is an error in a previous attempt, explain in **one** sentence why this error happened and how to fix it.
+Do not write code yet, simply the plan.
+{% include "plan_cot.jinja" %}

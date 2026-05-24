@@ -1,0 +1,23 @@
+"""
+This script creates the data map for the test text inputs, i.e. `test_txt_input_map.csv`.
+This map is a `pd.DataFrame` object populated with respect to the data description and the data present in the raw data directory.
+The first column of the created map must be the "id" of each test data point.
+The subsequent columns of `test_txt_input_map.csv` are the test input texts, if any.
+
+>>> # Example
+>>> test_txt_input_map = pd.DataFrame(columns=["id", "txt_input1", "txt_input2", ...])
+
+Create test_txt_input_map
+"""
+# <｜fim▁begin｜>
+import os
+import csv
+import pandas as pd
+import numpy as np
+# <｜fim▁hole｜>
+
+# <｜fim▁end｜>
+# save
+test_txt_input_map = test_txt_input_map.replace(np.nan, "")
+test_txt_input_map.to_csv("./test_txt_input_map.csv", quoting=csv.QUOTE_ALL, encoding="utf-8", index=False)
+print("`test_txt_input_map.csv` created and saved.")

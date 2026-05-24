@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# uv
+.uv-cache/
+uv.lock
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Notebooks
+.ipynb_checkpoints
+
+# Data (IMPORTANT!)
+data/*
+!data/README.md
+!data/.gitkeep
+
+# IDEs
+.idea/
+.vscode/
+
+.repo_secret
+
+geckodriver-v0.33.0-linux64.tar.gz
+
+third_party/agentk/data/raw_local_tasks
+
+run_log_*.txt
+
+.venv/
+venv/
+__pycache__/
+*.pyc
+third_party/agentk/ib/
+third_party/agentk/bin/
+
+catboost_info/
+
+venv/
+.venv/
+bin/
+lib/
+include/
+site-packages/
+
+third_party/agentk/outputs/
+
+logs
+job.slurm

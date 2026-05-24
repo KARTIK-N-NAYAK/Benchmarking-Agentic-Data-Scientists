@@ -1,0 +1,17 @@
+{% include "system_prompt.jinja" %}
+
+[[ USER ]]
+### Plan
+This is the plan you wrote to create the submission format function:
+{{ memory.retrieve({memory.mem_keys.THOUGHT: 1.0}) }}
+
+### Code
+This was the resulting code after your last attempt to create submission format function:
+{{ memory.retrieve({memory.mem_keys.CODE: 1.0}) }}
+
+Now please write a one-liner summary of that in a JSON format
+```json
+{
+    "summary": "<summary>"
+}
+```
