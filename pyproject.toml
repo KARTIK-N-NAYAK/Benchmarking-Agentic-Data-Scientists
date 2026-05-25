@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "Benchmarking-Agentic-Data-Scientists"
 description = "A project to benchmark the performance of agentic data scientists in various tasks."
@@ -6,11 +10,43 @@ requires-python = ">=3.11,<3.14"
 
 dependencies = [
     # Core
+    "langgraph",
+    "chardet>=5.2.0",
+    "FlagEmbedding>=1.3.5",
+    "faiss-cpu",
+    "importlib-resources>=6.4.5",
+    "langchain>=0.3.3",
+    "langchain_openai>=0.2.2",
+    "langchain-anthropic>=0.3.15",
+    "langchain_aws>=0.2.29",
+    "hydra-core",
+    "typer>=0.12.5",
+    "rich>=13.8.1",
+    "s3fs",
+    "flask>=2.2",
+    "fsspec",
+    "joblib>=1.4.2",
+    "python-calamine",
+    "tenacity>=8.2.2",
+    "torch",
+    "torchaudio",
+    "torchvision",
+    "reportlab>=4.4.3",
+    "streamlit>=1.37",
+    "streamlit-aggrid>=1.0.2",
+    "streamlit-extras>=0.4",
+    "psutil>=5.9.8",
+    "peft>=0.15.2",
+    "fastmcp==2.8.1",
+    "aiohttp>=3.8.0",
+    "boto3>=1.28.0",
+    "mcp>=0.1.0",
+
     "numpy>=1.26.2",
-    "pandas>=2.1.4",
+    "pandas>=2.2",
     "scipy>=1.11.4",
     "scikit-learn>=1.5.0",
-    "requests>=2.25.4",
+    "requests>=2.28.0",
     "jsonschema>=4.19.2",
     "omegaconf>=2.3.0",
     "dataclasses_json>=0.6.4",
@@ -19,7 +55,6 @@ dependencies = [
     "arrow",
     "humanize>=4.8.0",
     "funcy==2.0",
-    "rich>=13.7.0",
     "loguru==0.7.2",
     "tqdm>=4.66.3",
     "coolname>=2.2.0",
@@ -33,14 +68,13 @@ dependencies = [
 
     "openai>=1.69.0",
     "anthropic>=0.20.0",
-    "transformers>=4.44,<5",
+    "transformers>=4.44.2,<4.49.0",
     "datasets>=2.18.0",
     "sentencepiece",
     "torchmetrics",
     "optuna",
     "hyperopt",
     "bayesian-optimization",
-    "streamlit>=1.40.2",
     "accelerate>=0.30.0",
     "black==24.3.0",
     "pytest==7.4.3",
@@ -50,13 +84,13 @@ dependencies = [
     "ipython",
     "nbformat",
 
-    "matplotlib",
+    "matplotlib>=3.9.2",
     "jupyterlab",
     "kaggle>=1.8.2",
 
     # Runtime / API
     "httpx",
-    "pydantic",
+    "pydantic>=2.9.2",
     "duckduckgo-search",
 
     # ML
@@ -71,16 +105,27 @@ dependencies = [
     "absl-py",
 ]
 
+[project.scripts]
+aga          = "autogluon.assistant.cli.app:app"
+mlzero       = "autogluon.assistant.cli.app:app"
+mlzero-backend = "autogluon.assistant.webui.backend.app:main"
+mlzero-frontend = "autogluon.assistant.webui.runner:run_frontend"
+mlzero-mcp-server = "autogluon.mcp.server.runner:main"
+mlzero-mcp-client = "autogluon.mcp.client.server:main"
+
 [project.optional-dependencies]
 dev = [
     "pre-commit",
     "uv",
     "black==24.3.0",
     "pytest==7.4.3",
-    "pytest-asyncio",
+    "pytest-asyncio>=0.21.0",
     "ipykernel",
     "ipython",
     "nbformat",
+    "GitRepo>=1",
+    "isort",
+    "ruff==0.4",
 ]
 
 agents = [
@@ -146,12 +191,62 @@ bio = [
 ]
 
 # --- Tool Configurations ---
+[tool.setuptools.packages.find]
+where = ["third_party/ml_zero/src"]
+include = ["autogluon.assistant*", "autogluon.mcp*"]
+namespaces = true
+
+[tool.setuptools.package-data]
+"autogluon.assistant" = [
+  "configs/*.yaml",
+  "webui/static/*",
+  "webui/style.css",
+  "tools_registry/**/*",
+]
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = "--strict-markers"
+xfail_strict = true
+
 [tool.black]
 line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
 
 [tool.isort]
+known_first_party = "autogluon.assistant"
+known_third_party = [
+  "autogluon",
+  "joblib",
+  "langchain",
+  "numpy",
+  "omegaconf",
+  "openai",
+  "pandas",
+  "psutil",
+  "pydantic",
+  "pytest",
+  "requests",
+  "scipy",
+  "sklearn",
+  "tqdm",
+]
 line_length = 100
 profile = "black"
+
+[tool.codespell]
+skip = ".git,*.pdf,*.svg,*.ipynb,*.csv,"
+
+[tool.ruff]
+lint.ignore = [
+    "E501",  # Line too long
+    "E731",  # Do not assign a `lambda` expression, use a `def`
+    "E722",  # Do not use bare `except`
+]
+extend-exclude = ["__init__.py"]
+
+[tool.mypy]
+ignore_missing_imports = true
 
 [tool.uv.sources]
 torch = { index = "pytorch-cu128" }
