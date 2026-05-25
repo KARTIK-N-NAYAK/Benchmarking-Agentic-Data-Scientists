@@ -151,16 +151,10 @@ uv run python third_party/mle_star/scripts/run_pipeline.py \
 
 ### 5) MLZero
 
-MLZero is installed as a console script from the root environment.
+MLZero needs the input and output directories.
 
 ```powershell
-uv run mlzero -i path/to/data
-```
-
-For conversational mode:
-
-```powershell
-uv run mlzero chat -i path/to/data
+uv run python -m third_party.ml_zero.run_and_cleanup -i "$DATA_DIR" -o "$OUTPUT_DIR"
 ```
 
 #### MLZero notes
@@ -169,20 +163,11 @@ uv run mlzero chat -i path/to/data
 
 ### 6) AIDE ML
 
-After installing AIDE ML, run it with a data directory, goal, and evaluation metric.
+To run AIDE, update the data_dir and desc_file in third_party/aideml/aide/utils/config.yaml.
 
 ```powershell
-cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists/third_party/aideml
-uv pip install -e .
-cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists
-aide data_dir=path/to/data goal="Predict the target" eval="RMSE"
-```
-
-AIDE ML also provides a Streamlit UI:
-
-```powershell
-cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists/third_party/aideml
-streamlit run aide/webui/app.py
+uv run python -m third_party.aideml.aide.run
+uv run python -m third_party.aideml.finalize_submission
 ```
 
 ## Common troubleshooting
@@ -206,10 +191,8 @@ streamlit run aide/webui/app.py
 ## Recommended workflow
 
 1. Run `uv sync` at the repository root.
-2. Run `uv sync` in `third_party/agentk`.
-3. Install `aideml` with `uv pip install -e .` inside `third_party/aideml`.
-4. Use the agent-specific commands above.
-5. Use the AutoGluon runners for direct tabular experiments, and the bundled agent projects for full agentic workflows.
+2. Use the agent-specific commands above.
+3. Use the AutoGluon runners for direct tabular experiments, and the bundled agent projects for full agentic workflows.
 
 ## Notes on the current repository
 
