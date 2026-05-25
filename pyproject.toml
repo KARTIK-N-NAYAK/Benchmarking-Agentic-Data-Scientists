@@ -6,17 +6,56 @@ requires-python = ">=3.11,<3.14"
 
 dependencies = [
     # Core
-    "numpy",
-    "pandas",
+    "numpy>=1.26.2",
+    "pandas>=2.1.4",
+    "scipy>=1.11.4",
+    "scikit-learn>=1.5.0",
+    "requests>=2.25.4",
+    "jsonschema>=4.19.2",
+    "omegaconf>=2.3.0",
+    "dataclasses_json>=0.6.4",
+    "pyyaml",
+    "pytz",
+    "arrow",
+    "humanize>=4.8.0",
+    "funcy==2.0",
+    "rich>=13.7.0",
+    "loguru==0.7.2",
+    "tqdm>=4.66.3",
+    "coolname>=2.2.0",
+    "shutup>=0.2.0",
+    "genson>=1.2.0",
+    "igraph>=0.11.3",
+    "pyparsing",
+    "sympy",
+    "backoff",
+    "python-dotenv",
+
+    "openai>=1.69.0",
+    "anthropic>=0.20.0",
+    "transformers>=4.44,<5",
+    "datasets>=2.18.0",
+    "sentencepiece",
+    "torchmetrics",
+    "optuna",
+    "hyperopt",
+    "bayesian-optimization",
+    "streamlit>=1.40.2",
+    "accelerate>=0.30.0",
+    "black==24.3.0",
+    "pytest==7.4.3",
+    "pre-commit",
+    "uv",
+    "ipykernel",
+    "ipython",
+    "nbformat",
+
     "matplotlib",
-    "scikit-learn",
     "jupyterlab",
     "kaggle>=1.8.2",
 
     # Runtime / API
-    "openai",
     "httpx",
-    "python-dotenv",
     "pydantic",
     "duckduckgo-search",
 
@@ -36,9 +75,74 @@ dependencies = [
 dev = [
     "pre-commit",
     "uv",
-    "black",
-    "pytest",
+    "black==24.3.0",
+    "pytest==7.4.3",
     "pytest-asyncio",
+    "ipykernel",
+    "ipython",
+    "nbformat",
+]
+
+agents = [
+    "openai>=1.69.0",
+    "anthropic>=0.20.0",
+    "transformers",
+    "datasets>=2.1.0",
+    "sentencepiece",
+    "torchmetrics",
+    "optuna",
+    "hyperopt",
+    "bayesian-optimization",
+    "streamlit>=1.40.2",
+]
+
+ml = [
+    # PyTorch ecosystem
+    "torch",
+    "torchvision",
+    "torchaudio",
+    # "torchtext",
+    "pytorch-lightning",
+    "timm",
+    "torchinfo",
+    "kornia",
+    "fastai",
+
+    # ML / CV / stats
+    "lightgbm",
+    "xgboost",
+    "scikit-image",
+    "opencv-python",
+    "imbalanced-learn",
+    "numba",
+    "h5py",
+    "imagecodecs",
+    "hmmlearn",
+    "bayespy==0.5.1",
+    "sklearn-pandas",
+    "scikit-optimize",
+    "tensorpack",
+    "gensim",
+    "librosa",
+]
+
+notebooks = [
+    "matplotlib",
+    "seaborn",
+    "plotly",
+    "jupyterlab",
+    "pyarrow>=14,<17",
+    "xlrd",
+    "pdf2image",
+    "pypdf",
+    "pyocr",
+    "pillow",
+]
+
+bio = [
+    "biopython",
+    "markovify",
+    "imgaug",
 ]
 
 # --- Tool Configurations ---
@@ -48,3 +152,17 @@ line-length = 100
 [tool.isort]
 line_length = 100
 profile = "black"
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
+vllm = { index = "pypi" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"

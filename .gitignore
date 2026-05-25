@@ -7,6 +7,7 @@ __pycache__/
 env/
 venv/
 .venv/
+.venv_llm/
 
 # uv
 .uv-cache/
@@ -22,8 +23,11 @@ dist/
 
 # Data (IMPORTANT!)
 data/*
+data*/*
 !data/README.md
 !data/.gitkeep
+output*/*
+logs/*
 
 # IDEs
 .idea/
@@ -53,8 +57,15 @@ lib/
 include/
 site-packages/
 
+llm/*
+metrics.json
 third_party/agentk/outputs/
 log/
 third_party/mle_star/machine_learning_engineering/tasks/
+third_party/ml_zero/run_pipeline.sh
+third_party/ml_zero/*.slurm
+third_party/ml_zero/src/autogluon/assistant/tools_registry/indices/*
 logs
+aide_logs/
 job.slurm
+llm_requirements.txt
