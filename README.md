@@ -61,7 +61,7 @@ If you prefer Command Prompt:
 If you want to fetch Kaggle competition data, create `kaggle.json` and accept the competition rules.
 
 ```powershell
-cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists
+cd Benchmarking-Agentic-Data-Scientists
 uv run python src/download_data.py
 ```
 
@@ -144,10 +144,13 @@ Then run:
 
 ```powershell
 uv run python third_party/mle_star/scripts/run_pipeline.py \
-  --task-name california-housing-prices \
+  --task-name bioresponse \
   --task-type "Tabular Regression"
 ```
 
+#### MLE-STAR notes
+- Replace `bioresponse` with the task name you want to run.
+- `--task-type` should be either "Tabular Classification" or "Tabular Regression".
 
 ### 5) MLZero
 
