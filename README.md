@@ -1,108 +1,219 @@
-# ADSB
+﻿# Benchmarking Agentic Data Scientists
 
-Brief description of your research project and its main objectives.
+This repository contains a small orchestration layer plus several bundled agent implementations. This guide explains how to create a working environment and how to run each agent from the current checkout.
 
-## Overview
+## Repository map
 
-Provide a more detailed explanation of:
-- What problem this research addresses
-- Your approach or methodology
-- Key findings or expected outcomes
+### Root-level runners
+- `src/autogluon_runner_cla.py` — AutoGluon classification runner
+- `src/autogluon_runner_reg.py` — AutoGluon regression runner
+- `src/download_data.py` — Kaggle downloader for the competition list in `config/agentk.txt`
+- `src/run_experiment.py` — current stub, not wired up for end-to-end execution
 
-## Setup
+### Bundled agent projects
+- `third_party/agentk` — AgentK
+- `third_party/mle_star` — MLE-STAR
+- `third_party/mlzero` — AutoGluon Assistant / MLZero
+- `third_party/aideml` — AIDE ML
 
-This project uses [uv](https://github.com/astral-sh/uv) for fast Python package management.
+> Important: the top-level `src/agentk_runner.py` is a host-specific wrapper and is not the recommended general entry point. Use the AgentK subproject directly for portable runs.
 
-### Prerequisites
-- Python 3.8+ 
-- uv (install with `curl -LsSf https://astral.sh/uv/install.sh | sh`)
+## Prerequisites
 
-### Installation
+### Required tools
+- Python 3.11
+- `uv`
+- Git
+- PowerShell or Command Prompt
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/your-project.git
-cd your-project
+### Install `uv`
 
-# Create virtual environment and install dependencies
+```powershell
+winget install --id=astral-sh.uv -e
+uv --version
+```
+
+## Recommended environment setup
+
+### 1) Create the root environment
+
+```powershell
+cd Benchmarking-Agentic-Data-Scientists
 uv sync
-
-# Activate the virtual environment
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-## Usage
+This creates `.venv` and installs the packages declared in `pyproject.toml`.
 
-```bash
-# Example command to run main analysis
-uv run python src/main.py
+### 2) Activate the root environment
+
+```powershell
+.\.venv\Scripts\Activate.ps1
 ```
 
-## Dependencies
+If you prefer Command Prompt:
 
-To add new dependencies:
-```bash
-uv add package-name
-uv add --dev package-name  # for development dependencies
+```cmd
+.venv\Scripts\activate.bat
 ```
 
-Here is a formatted snippet you can copy directly into your `README.md` file. It covers the prerequisites, authentication, and rule acceptance required to use the Kaggle API.
+## Optional: Kaggle data download
 
------
+If you want to fetch Kaggle competition data, create `kaggle.json` and accept the competition rules.
 
-## Data Acquisition
-
-To reproduce the dataset usage, you must download the data directly from Kaggle using their API.
-
-### 1\. API Credentials (`kaggle.json`)
-
-You need to authenticate to download the dataset:
-
-1.  Log in to your Kaggle account.
-2.  Go to **Settings** -\> **API** section.
-3.  Click **Create New Token**. This will download a `kaggle.json` file.
-4.  Place this file in the correct location for your operating system:
-      * **Linux/Mac:** `~/.kaggle/kaggle.json`
-      * **Windows:** `C:\Users\<Windows-Username>\.kaggle\kaggle.json`
-
-> **Note for Linux/Mac users:** Ensure your key is readable only by you by running:
-> `chmod 600 ~/.kaggle/kaggle.json`
-
-### 3\. Accept Competition Rules (Crucial)
-
-Before the API allows you to download files, you must accept the competition rules on the website:
-
-1.  Navigate to the specific competition page on Kaggle.
-2.  Click on the **"Rules"** tab.
-3.  Scroll to the bottom and click **"I Understand and Accept"**.
-4.  *If you do not do this, the API will return a `403 Forbidden` error.*
-
-The exceptions thrown inside of `src/download_data.py` will point you to the URLs.
-
-### 4\. Download Data
-
-Once set up, run the following command to download the data to the current directory:
-
-```bash
-uv run src/download_data.py
+```powershell
+cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists
+uv run python src/download_data.py
 ```
 
-If you use this research, please cite:
-```bibtex
-@article{yourname2024,
-  title={Your Research Title},
-  author={Your Name and Collaborators},
-  journal={Journal Name},
-  year={2024}
-}
+The downloader reads `config/agentk.txt` and writes data under `data/`.
+
+## Running each agent
+
+### 1) AutoGluon classification runner
+
+Use this runner for classification tasks.
+
+```powershell
+uv run python src/autogluon_runner_cla.py \
+  --train_path path/to/train.csv \
+  --test_path path/to/test.csv \
+  --target target_column \
+  --output_path outputs/predictions.csv \
+  --output_column_name prediction \
+  --time_limit 1800 \
+  --model_dir models/autogluon_cla \
+  --num_gpus 0 \
+  --log_path logs/autogluon_cla.log
 ```
 
-## License
+### 2) AutoGluon regression runner
 
-[Choose appropriate license - MIT, Apache 2.0, GPL, etc.]
+Use this runner for regression tasks.
 
-## Contact
+```powershell
+uv run python src/autogluon_runner_reg.py \
+  --train_path path/to/train.csv \
+  --test_path path/to/test.csv \
+  --target target_column \
+  --output_path outputs/predictions.csv \
+  --output_column_name prediction \
+  --time_limit 1800 \
+  --model_dir models/autogluon_reg \
+  --num_gpus 0 \
+  --log_path logs/autogluon_reg.log
+```
 
-- **Author**: Your Name (your.email@domain.com)
-- **Institution**: Your Institution
-.
+### 3) AgentK
+
+AgentK is the recommended option for the bundled AgentK workflow. Run it from inside its own subproject.
+
+```powershell
+
+uv run python third_party/agentk/run_complete_pipeline.py \
+  --task_id fctp \
+  --is_local_task \
+  --tabular_task \
+  --alt_raw_data_root ./data/raw_local_tasks \
+  --llm openai/gpt-4o-mini \
+  --code_llm openai/gpt-4o-mini \
+  --total_time 1800 \
+  --max_time_per_submission 600 \
+  --attempt 0 \
+  --workspace_name ./workspace/agentk
+```
+
+#### AgentK notes
+- Replace `fctp` with the task ID you want to run.
+- `--alt_raw_data_root` should point at a directory containing the raw task files.
+- If you are using a hosted provider, set the environment variables expected by the model wrapper before launching.
+
+### 4) MLE-Star
+
+MLE-Star is a separate project under `third_party/mle_star`. It uses an OpenAI-compatible endpoint and reads `.env` values.
+
+Create a `.env` at the repository root or in `third_party/mle_star`:
+
+```env
+OPENAI_BASE_URL=https://your-provider/v1
+OPENAI_API_KEY=your-key
+OPENROUTER_API_KEY=your-key
+ROOT_AGENT_MODEL=openai/gpt-oss-20b:free
+```
+
+Then run:
+
+```powershell
+uv run python third_party/mle_star/scripts/run_pipeline.py \
+  --task-name california-housing-prices \
+  --task-type "Tabular Regression"
+```
+
+
+### 5) MLZero
+
+MLZero is installed as a console script from the root environment.
+
+```powershell
+uv run mlzero -i path/to/data
+```
+
+For conversational mode:
+
+```powershell
+uv run mlzero chat -i path/to/data
+```
+
+#### MLZero notes
+- The bundled README says Linux-only support at present.
+- On Windows, use WSL or a Linux container if you want the most reliable experience.
+
+### 6) AIDE ML
+
+After installing AIDE ML, run it with a data directory, goal, and evaluation metric.
+
+```powershell
+cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists/third_party/aideml
+uv pip install -e .
+cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists
+aide data_dir=path/to/data goal="Predict the target" eval="RMSE"
+```
+
+AIDE ML also provides a Streamlit UI:
+
+```powershell
+cd d:/HiWi/Agent/Benchmarking-Agentic-Data-Scientists/third_party/aideml
+streamlit run aide/webui/app.py
+```
+
+## Common troubleshooting
+
+### 1) AgentK runner fails immediately
+- Use the AgentK subproject directly instead of `src/agentk_runner.py`.
+- Confirm that `uv sync` has been run inside `third_party/agentk`.
+
+### 2) MLE-Star import errors
+- Install `google-adk` in the active environment.
+- Verify that `OPENAI_BASE_URL` and `OPENAI_API_KEY` are set.
+
+### 3) Kaggle downloads fail
+- Make sure `kaggle.json` exists in your home directory.
+- Visit the competition rules page and accept the rules for each competition.
+
+### 4) `mlzero` is not found
+- Re-run `uv sync` from the repository root.
+- Confirm the current shell has the root `.venv` activated.
+
+## Recommended workflow
+
+1. Run `uv sync` at the repository root.
+2. Run `uv sync` in `third_party/agentk`.
+3. Install `aideml` with `uv pip install -e .` inside `third_party/aideml`.
+4. Use the agent-specific commands above.
+5. Use the AutoGluon runners for direct tabular experiments, and the bundled agent projects for full agentic workflows.
+
+## Notes on the current repository
+
+- `README.md` is a placeholder and does not document the actual execution flow.
+- `src/run_experiment.py` is currently a stub.
+- `src/download_description.py` references `src/datasets.txt`, which is not present in the current checkout.
+- The AgentK host wrapper in `src/agentk_runner.py` contains hard-coded paths and should be treated as environment-specific.
