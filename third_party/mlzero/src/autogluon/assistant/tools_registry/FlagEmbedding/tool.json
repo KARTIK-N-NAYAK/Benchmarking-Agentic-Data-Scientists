@@ -1,0 +1,11 @@
+{
+  "name": "FlagEmbedding",
+  "version": "1.3.4",
+  "description": "FlagEmbedding specializes in retrieval and reranking tasks.",
+  "features": [
+  ],
+  "requirements": [],
+  "prompt_template": [
+    "DO NOT SAVE THE MODEL."
+  ]
+}
